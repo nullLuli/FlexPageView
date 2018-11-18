@@ -10,7 +10,8 @@ import Foundation
 import UIKit
 
 class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource {
-    var pageView: FlexPageView = FlexPageView()
+    var pageView: FlexPageView2 = FlexPageView2()
+    static let titles: [String] = ["hhhhh", "22", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,10 +26,10 @@ class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewData
     }
     
     func titles() -> [String] {
-        return ["hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
+        return TestFlexPageViewController.titles
     }
     
     func page(at index: Int) -> LLCollectionCell {
         return LLCollectionCell()
-    }
+    }    
 }

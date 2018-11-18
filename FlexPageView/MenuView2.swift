@@ -90,6 +90,18 @@ class MenuView2: UIView {
      scrollview的状态：scrollview的偏移，UI变化
      */
     func changeOffsetTo(index: Int) {
+        if index < views.count {
+            let view = views[index]
+            var offsetX = view.frame.midX - (scrollView.frame.width / 2) //滚到scrollview中间
+            offsetX = max(offsetX, 0)
+            if scrollView.contentSize.width > scrollView.frame.width {
+                offsetX = min(offsetX, scrollView.contentSize.width - scrollView.frame.width)
+            }
+            scrollView.contentOffset = CGPoint(x: offsetX, y: 0)
+        }
+    }
+    
+    func selectIndex(_ index: Int) {
         if let preIndex = selectedIndex, preIndex < views.count {
             if preIndex == index { return }
             let view = views[preIndex]
@@ -100,13 +112,6 @@ class MenuView2: UIView {
             let view = views[index]
             view.isSelected = true
             selectedIndex = index
-            
-            var offsetX = view.frame.midX - (scrollView.frame.width / 2) //滚到scrollview中间
-            offsetX = max(offsetX, 0)
-            if scrollView.contentSize.width > scrollView.frame.width {
-                offsetX = min(offsetX, scrollView.contentSize.width - scrollView.frame.width)
-            }
-            scrollView.contentOffset = CGPoint(x: offsetX, y: 0)
         }
     }
     

@@ -1,35 +1,26 @@
 //
-//  SelfDefineCollectionView.swift
-//  swiftLearn
+//  FlexPageView2.swift
+//  FlexPageView
 //
-//  Created by nullLuli on 2018/11/1.
-//  Copyright © 2018年 nullLuli. All rights reserved.
+//  Created by nullLuli on 2018/11/16.
+//  Copyright © 2018 nullLuli. All rights reserved.
 //
 
-import UIKit
 import Foundation
+import UIKit
 
-@objc protocol SelfDefineCollectionViewDataSource {
-    @objc func numberOfPage() -> Int
-    @objc func titles() -> [String]
-    @objc func page(at index: Int) -> LLCollectionCell
-}
-
-protocol IFlexPageView {
-    func menuHadSelectIndex(_ index: Int)
-    var dataSource: SelfDefineCollectionViewDataSource? {get set}
-}
-
-//TODO: 定义一个缓存策略
-
-class LLCollectionCell: UIView {
-}
-
-class FlexPageView: UIView, UIScrollViewDelegate {
+class FlexPageView2: UIView, UIScrollViewDelegate {
     
     //界面
     var scrollView: UIScrollView = UIScrollView()
-    var menuView: MenuView2 = MenuView2()
+    var menuView: MenuView = {
+        var option = MenuViewOption()
+        option.allowSelectedEnlarge = true
+        option.selectedScale = 1.5
+        let view = MenuView.init(frame: CGRect(x: 0, y: 0, width: 0, height: 40), option: option)
+        view.backgroundColor = UIColor.white
+        return view
+    }()
     
     var pagesDic: [Int: LLCollectionCell] = [:]
     
@@ -40,9 +31,11 @@ class FlexPageView: UIView, UIScrollViewDelegate {
             reloadData()
         }
     }
+    
     var numberOfPage: Int?
     var currentIndex: Int = 0
     let cacheRange: Int = 1
+    var titles: [String] = []
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -52,7 +45,8 @@ class FlexPageView: UIView, UIScrollViewDelegate {
         addSubview(scrollView)
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
-        menuView.flexPageView = self
+        menuView.dataSource = menuView
+        menuView.delegate = menuView
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -73,18 +67,20 @@ class FlexPageView: UIView, UIScrollViewDelegate {
         //menuview
         if let titles = dataSource?.titles() {
             assert(titles.count == numberOfPage)
+            self.titles = titles
             menuView.reloadTitles(titles)
         }
         
         currentIndex = 0
         constructPages()
-        menuView.selectIndex(currentIndex)
+        let indexPath = IndexPath(item: currentIndex, section: 0)
+        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .left)
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        menuView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: 40)
+        menuView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: menuView.frame.height)
         scrollView.frame = CGRect(x: 0, y: menuView.frame.maxY, width: frame.width, height: frame.height - menuView.frame.maxY)
         scrollView.contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)
         
@@ -111,8 +107,8 @@ class FlexPageView: UIView, UIScrollViewDelegate {
         
         debugPrint("断页--- \(currentIndex)")
         constructPages()
-        menuView.changeOffsetTo(index: currentIndex)
-        menuView.selectIndex(currentIndex)
+        let indexPath = IndexPath(item: currentIndex, section: 0)
+        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
     }
     
     func constructPages() {
@@ -161,24 +157,11 @@ class FlexPageView: UIView, UIScrollViewDelegate {
         constructPages()
     }
     
-
+    
     func layoutPageViews() {
         //调整page在scrollview中的位置
         for (index, pageView) in pagesDic {
             pageView.frame = CGRect(x: CGFloat(index) * scrollView.frame.width, y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
         }
-    }
+    }    
 }
-
-extension UIColor {
-    //返回随机颜色
-    open class var randomColor: UIColor{
-        get {
-            let red = CGFloat(arc4random()%256)/255.0
-            let green = CGFloat(arc4random()%256)/255.0
-            let blue = CGFloat(arc4random()%256)/255.0
-            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
-        }
-    }
-}
-
