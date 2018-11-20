@@ -9,13 +9,6 @@
 import Foundation
 import UIKit
 
-enum Direction: Int {
-    case up
-    case down
-    case left
-    case right
-}
-
 class FlexPageView2: UIView, UIScrollViewDelegate {
     
     //界面
@@ -95,33 +88,23 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
     }
     
     //滑动处理
-    var lastDirection: Direction?
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        lastDirection = nil
-    }
-    
+    var lastOffsetX: CGFloat = 0
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //判断现在的滑动位置：left index， precent
         let scrollViewCurrentLeftIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
+//        debugPrint("leftindex \(scrollViewCurrentLeftIndex)")
         let precent = (scrollView.contentOffset.x - (CGFloat(scrollViewCurrentLeftIndex) * scrollView.frame.width)) / scrollView.frame.width
         
-        var direction: Direction?
-        if let directionL = scrollView.panGestureRecognizer.direction {
-            direction = directionL
-        } else if let lastDirection = lastDirection {
-            direction = lastDirection
+        var direction: Direction
+        if lastOffsetX < scrollView.contentOffset.x {
+            direction = .left
         } else {
+            direction = .right
         }
         
-        if let direction = direction {
-            switch direction {
-            case .left, .right:
-                lastDirection = direction
-                menuView.changeUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
-            default:
-                ()
-            }
-        }
+        menuView.changeUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+        
+        lastOffsetX = scrollView.contentOffset.x
     }
     
     var scrollFinalOffset: CGPoint = CGPoint.zero
@@ -133,10 +116,21 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
         //检查是不是缓存范围的page都显示
         currentIndex = Int(scrollFinalOffset.x / scrollView.frame.width)
         
-        debugPrint("断页--- \(currentIndex)")
         constructPages()
         let indexPath = IndexPath(item: currentIndex, section: 0)
         menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let scrollViewCurrentIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
+        if scrollViewCurrentIndex != currentIndex {
+            //滑动速度非常快的时候，会出现scrollViewWillEndDragging中预测的targetContentOffset和实际停止的contentOffset不同，这里做一下兼容
+            currentIndex = scrollViewCurrentIndex
+            
+            constructPages()
+            let indexPath = IndexPath(item: currentIndex, section: 0)
+            menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        }
     }
     
     func constructPages() {
@@ -194,17 +188,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
     }    
 }
 
-extension UIPanGestureRecognizer {
-    
-    var direction: Direction? {
-        let velocity = self.velocity(in: view)
-        let vertical = fabs(velocity.y) > fabs(velocity.x)
-        switch (vertical, velocity.x, velocity.y) {
-        case (true, _, let y) where y < 0: return .up
-        case (true, _, let y) where y > 0: return .down
-        case (false, let x, _) where x > 0: return .right
-        case (false, let x, _) where x < 0: return .left
-        default: return nil
-        }
-    }
+enum Direction {
+    case left
+    case right
 }

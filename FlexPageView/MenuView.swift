@@ -134,9 +134,8 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         self.reloadData()
     }
     
-    func changeUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {
-        debugPrint("leftindex: \(leftIndex)")
-        
+    // MARK: 根据滑动比例更新UI
+    func changeUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {        
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
         if leftIndex > -1 {
@@ -153,6 +152,12 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         }
         
         //underlineview
+        updateUnderlineView(leftIndex: leftIndex, precent: precent, direction: direction)
+    }
+    
+    func updateUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
+        let numberOfItem = numberOfItems(inSection: 0)
+        let rightIndex = leftIndex + 1
         if leftIndex > -1, rightIndex < numberOfItem {
             let indexPath = IndexPath(item: leftIndex, section: 0)
             let rightIndexPath = IndexPath(item: rightIndex, section: 0)
