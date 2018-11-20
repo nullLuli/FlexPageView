@@ -9,11 +9,16 @@
 import UIKit
 
 struct MenuViewOption {
+    static let NormalScale: CGFloat = 1
+
     var titleFont: CGFloat = 15
     var allowSelectedEnlarge: Bool = false
     var selectedScale: CGFloat = 1
-    
-    static let NormalScale: CGFloat = 1
+    var selectedColor: UIColor = UIColor.blue
+    var titleColor: UIColor = UIColor.black
+    var showUnderline: Bool = true
+    var underlineWidth: CGFloat = 10
+    var underlineHeight: CGFloat = 2
 }
 
 protocol MenuViewLayoutProtocol: class {
@@ -88,6 +93,11 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     var option: MenuViewOption
     
+    var underlineView: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
     init(frame: CGRect, option: MenuViewOption = MenuViewOption()) {
         self.option = option
         
@@ -96,13 +106,27 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
 
         super.init(frame: frame, collectionViewLayout: layout)
         
-        register(MenuViewCell.self, forCellWithReuseIdentifier: MenuViewCell.identifier)
-        
         layout.delegate = self
+        
+        addSubview(underlineView)
+        underlineView.backgroundColor = UIColor.yellow
+        underlineView.frame.size = CGSize(width: option.underlineWidth, height: option.underlineHeight)
+        
+        registCell(self)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func registCell(_ collectionView: UICollectionView) {
+        collectionView.register(MenuViewCell.self, forCellWithReuseIdentifier: MenuViewCell.identifier)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        underlineView.frame.origin.y = bounds.size.height - underlineView.frame.height - 5
     }
     
     func reloadTitles(_ titles: [String]) {
@@ -110,24 +134,51 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         self.reloadData()
     }
     
-    func changeUIWithPrecent(leftIndex: Int, precent: CGFloat) {
+    func changeUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {
         debugPrint("leftindex: \(leftIndex)")
-        if option.allowSelectedEnlarge {
-            let numberOfItem = numberOfItems(inSection: 0)
-            guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
-            if leftIndex > -1 {
-                let indexPath = IndexPath(item: leftIndex, section: 0)
-                let leftView = cellForItem(at: indexPath)
-                let leftScale = 1 + ( (1 - precent) * (option.selectedScale - MenuViewOption.NormalScale))
-                leftView?.transform = CGAffineTransform.identity.scaledBy(x: leftScale, y: leftScale)
-            }
+        
+        let numberOfItem = numberOfItems(inSection: 0)
+        guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
+        if leftIndex > -1 {
+            let indexPath = IndexPath(item: leftIndex, section: 0)
+            let leftView = cellForItem(at: indexPath)
+            (leftView as? MenuViewCell)?.updateUI(with: precent)
+        }
+        
+        let rightIndex = leftIndex + 1
+        if rightIndex < numberOfItem {
+            let indexPath = IndexPath(item: rightIndex, section: 0)
+            let rightView = cellForItem(at: indexPath)
+            (rightView as? MenuViewCell)?.updateUI(with: 1 - precent)
+        }
+        
+        //underlineview
+        if leftIndex > -1, rightIndex < numberOfItem {
+            let indexPath = IndexPath(item: leftIndex, section: 0)
+            let rightIndexPath = IndexPath(item: rightIndex, section: 0)
             
-            let rightIndex = leftIndex + 1
-            if rightIndex < numberOfItem {
-                let indexPath = IndexPath(item: rightIndex, section: 0)
-                let rightView = cellForItem(at: indexPath)
-                let rightScale = 1 + (precent * (option.selectedScale - MenuViewOption.NormalScale))
-                rightView?.transform = CGAffineTransform.identity.scaledBy(x: rightScale, y: rightScale)
+            if let leftView = cellForItem(at: indexPath), let rightView = cellForItem(at: rightIndexPath) {
+                let leftX: CGFloat = ceil(leftView.center.x - option.underlineWidth / 2)
+                let rightX: CGFloat = ceil(rightView.center.x - option.underlineWidth / 2)
+                let underlineY: CGFloat = bounds.height - option.underlineHeight - 5
+                if option.showUnderline {
+                    let detalWidth = rightX - leftX
+                    if direction == .left {
+                        if precent <= 0.5 {
+                            underlineView.frame = CGRect(x: leftX, y: underlineY, width: option.underlineWidth + (precent / 0.5) * detalWidth, height: option.underlineHeight)
+                        } else {
+                            underlineView.frame = CGRect(x: leftX + detalWidth - ((1 - precent) / 0.5) * detalWidth, y: underlineY, width: option.underlineWidth + ((1 - precent) / 0.5) * detalWidth, height: option.underlineHeight)
+                        }
+                        
+                    } else {
+                        if precent > 0.5 {
+                            underlineView.frame = CGRect(x: leftX + detalWidth  - ((1 - precent) / 0.5) * detalWidth, y: underlineY, width: option.underlineWidth + ((1 - precent) / 0.5) * detalWidth, height: option.underlineHeight)
+                        } else {
+                            underlineView.frame = CGRect(x: leftX, y: underlineY, width: option.underlineWidth + (precent / 0.5) * detalWidth, height: option.underlineHeight)
+                        }
+                        
+                    }
+                }
             }
         }
     }
@@ -143,7 +194,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MenuViewCell.identifier, for: indexPath)
-        (cell as? MenuViewCell)?.setData(text: titles[indexPath.item], textSize: option.titleFont)
+        (cell as? MenuViewCell)?.setData(text: titles[indexPath.item], textSize: option.titleFont, option: option)
         return cell
     }
     
@@ -153,6 +204,8 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
 }
 
 class MenuViewCell: UICollectionViewCell {
+    var option: MenuViewOption = MenuViewOption()
+    
     var titleLable: UILabel = {
         let view = UILabel()
         view.textAlignment = .center
@@ -169,18 +222,36 @@ class MenuViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setData(text: String, textSize: CGFloat) {
+    func setData(text: String, textSize: CGFloat, option: MenuViewOption) {
+        self.option = option
         titleLable.text = text
         if titleLable.font.pointSize != textSize {
             titleLable.font = UIFont.systemFont(ofSize: textSize)
         }
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
         
         titleLable.sizeToFit()
         titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
+    }
+    
+    func updateUI(with precent: CGFloat) {
+        if option.allowSelectedEnlarge {
+            let scale = 1 + ((1 - precent) * (option.selectedScale - MenuViewOption.NormalScale))
+            titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
+        }
+    }
+    
+    override var isSelected: Bool {
+        didSet {
+            if isSelected {
+                titleLable.textColor = option.selectedColor
+            } else {
+                titleLable.textColor = option.titleColor
+            }
+        }
     }
 }
 

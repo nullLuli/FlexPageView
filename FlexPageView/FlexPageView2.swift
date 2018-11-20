@@ -9,6 +9,13 @@
 import Foundation
 import UIKit
 
+enum Direction: Int {
+    case up
+    case down
+    case left
+    case right
+}
+
 class FlexPageView2: UIView, UIScrollViewDelegate {
     
     //界面
@@ -88,12 +95,33 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
     }
     
     //滑动处理
+    var lastDirection: Direction?
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        lastDirection = nil
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //判断现在的滑动位置：left index， precent
         let scrollViewCurrentLeftIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
         let precent = (scrollView.contentOffset.x - (CGFloat(scrollViewCurrentLeftIndex) * scrollView.frame.width)) / scrollView.frame.width
         
-        menuView.changeUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent)
+        var direction: Direction?
+        if let directionL = scrollView.panGestureRecognizer.direction {
+            direction = directionL
+        } else if let lastDirection = lastDirection {
+            direction = lastDirection
+        } else {
+        }
+        
+        if let direction = direction {
+            switch direction {
+            case .left, .right:
+                lastDirection = direction
+                menuView.changeUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+            default:
+                ()
+            }
+        }
     }
     
     var scrollFinalOffset: CGPoint = CGPoint.zero
@@ -164,4 +192,19 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
             pageView.frame = CGRect(x: CGFloat(index) * scrollView.frame.width, y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
         }
     }    
+}
+
+extension UIPanGestureRecognizer {
+    
+    var direction: Direction? {
+        let velocity = self.velocity(in: view)
+        let vertical = fabs(velocity.y) > fabs(velocity.x)
+        switch (vertical, velocity.x, velocity.y) {
+        case (true, _, let y) where y < 0: return .up
+        case (true, _, let y) where y > 0: return .down
+        case (false, let x, _) where x > 0: return .right
+        case (false, let x, _) where x < 0: return .left
+        default: return nil
+        }
+    }
 }
