@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class FlexPageView2: UIView, UIScrollViewDelegate {
+class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
     
     //界面
     var scrollView: UIScrollView = UIScrollView()
@@ -45,8 +45,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
         addSubview(scrollView)
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
-        menuView.dataSource = menuView
-        menuView.delegate = menuView
+        menuView.menuViewDelegate = self
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -102,7 +101,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
             direction = .right
         }
         
-        menuView.changeUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+        menuView.updateUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
         
         lastOffsetX = scrollView.contentOffset.x
     }
@@ -173,12 +172,17 @@ class FlexPageView2: UIView, UIScrollViewDelegate {
     }
     
     // MARK: 选中处理
-    func menuHadSelectIndex(_ index: Int) {
-        currentIndex = index
+    func menuView(_ menuView: MenuView, didSelectItemAt indexPath: IndexPath) {
+        currentIndex = indexPath.item
+        
+        let offsetX = CGFloat(currentIndex) * scrollView.frame.width
+        scrollView.contentOffset = CGPoint(x: offsetX, y: scrollView.contentOffset.y)
         
         constructPages()
     }
     
+    func menuView(_ menuView: MenuView, didDeselectItemAt indexPath: IndexPath) {
+    }
     
     func layoutPageViews() {
         //调整page在scrollview中的位置

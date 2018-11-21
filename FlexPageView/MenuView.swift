@@ -25,6 +25,11 @@ protocol MenuViewLayoutProtocol: class {
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String
 }
 
+protocol MenuViewProtocol {
+    func menuView(_ menuView: MenuView, didSelectItemAt indexPath: IndexPath)
+    func menuView(_ menuView: MenuView, didDeselectItemAt indexPath: IndexPath)
+}
+
 class MenuViewLayout: UICollectionViewLayout {
     fileprivate var titleMargin: CGFloat = 30
     
@@ -93,10 +98,16 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     var option: MenuViewOption
     
+    var menuViewDelegate: MenuViewProtocol?
+    
     var underlineView: UIView = {
         let view = UIView()
         return view
     }()
+    
+    var underlineY: CGFloat {
+        return bounds.height - option.underlineHeight - 5
+    }
     
     init(frame: CGRect, option: MenuViewOption = MenuViewOption()) {
         self.option = option
@@ -113,6 +124,9 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         underlineView.frame.size = CGSize(width: option.underlineWidth, height: option.underlineHeight)
         
         registCell(self)
+        
+        self.dataSource = self
+        self.delegate = self
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -135,7 +149,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     }
     
     // MARK: 根据滑动比例更新UI
-    func changeUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {        
+    func updateUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {        
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
         if leftIndex > -1 {
@@ -165,7 +179,6 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
             if let leftView = cellForItem(at: indexPath), let rightView = cellForItem(at: rightIndexPath) {
                 let leftX: CGFloat = ceil(leftView.center.x - option.underlineWidth / 2)
                 let rightX: CGFloat = ceil(rightView.center.x - option.underlineWidth / 2)
-                let underlineY: CGFloat = bounds.height - option.underlineHeight - 5
                 if option.showUnderline {
                     let detalWidth = rightX - leftX
                     if direction == .left {
@@ -188,6 +201,21 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         }
     }
     
+    // MARK: 根据选中位置更新UI
+    func updateUIWithIndex(_ index: Int) {
+        moveUnderlineView(to: index)
+    }
+    
+    func moveUnderlineView(to index: Int) {
+        let numberOfItem = numberOfItems(inSection: 0)
+        guard index < numberOfItem else { return }
+        let indexPath = IndexPath(item: index, section: 0)
+        if let cell = cellForItem(at: indexPath) {
+            let x = ceil(cell.center.x - option.underlineWidth / 2)
+            underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
+        }
+    }
+    
     // MARK: UICollectionView
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
@@ -201,6 +229,17 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MenuViewCell.identifier, for: indexPath)
         (cell as? MenuViewCell)?.setData(text: titles[indexPath.item], textSize: option.titleFont, option: option)
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        menuViewDelegate?.menuView(self, didSelectItemAt: indexPath)
+        
+        collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        updateUIWithIndex(indexPath.item)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        menuViewDelegate?.menuView(self, didDeselectItemAt: indexPath)
     }
     
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String {
@@ -253,8 +292,10 @@ class MenuViewCell: UICollectionViewCell {
         didSet {
             if isSelected {
                 titleLable.textColor = option.selectedColor
+                titleLable.transform = CGAffineTransform.identity.scaledBy(x: option.selectedScale, y: option.selectedScale)
             } else {
                 titleLable.textColor = option.titleColor
+                titleLable.transform = CGAffineTransform.identity.scaledBy(x: MenuViewOption.NormalScale, y: MenuViewOption.NormalScale)
             }
         }
     }
