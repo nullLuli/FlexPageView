@@ -101,7 +101,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
             direction = .right
         }
         
-        menuView.updateUIWithPrecent(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+        menuView.updateScrollingUI(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
         
         lastOffsetX = scrollView.contentOffset.x
     }

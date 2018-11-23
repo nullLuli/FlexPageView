@@ -149,27 +149,27 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     }
     
     // MARK: 根据滑动比例更新UI
-    func updateUIWithPrecent(leftIndex: Int, precent: CGFloat, direction: Direction) {        
+    func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: Direction) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
         if leftIndex > -1 {
             let indexPath = IndexPath(item: leftIndex, section: 0)
             let leftView = cellForItem(at: indexPath)
-            (leftView as? MenuViewCell)?.updateUI(with: precent)
+            (leftView as? MenuViewCell)?.updateScrollingUI(with: precent)
         }
         
         let rightIndex = leftIndex + 1
         if rightIndex < numberOfItem {
             let indexPath = IndexPath(item: rightIndex, section: 0)
             let rightView = cellForItem(at: indexPath)
-            (rightView as? MenuViewCell)?.updateUI(with: 1 - precent)
+            (rightView as? MenuViewCell)?.updateScrollingUI(with: 1 - precent)
         }
         
         //underlineview
-        updateUnderlineView(leftIndex: leftIndex, precent: precent, direction: direction)
+        updateScrollingUnderlineView(leftIndex: leftIndex, precent: precent, direction: direction)
     }
     
-    func updateUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
+    func updateScrollingUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
         let numberOfItem = numberOfItems(inSection: 0)
         let rightIndex = leftIndex + 1
         if leftIndex > -1, rightIndex < numberOfItem {
@@ -202,11 +202,18 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     }
     
     // MARK: 根据选中位置更新UI
-    func updateUIWithIndex(_ index: Int) {
-        moveUnderlineView(to: index)
+    func updateSelectUI(_ index: Int, select: Bool) {
+        let indexPath = IndexPath(item: index, section: 0)
+        if let cell = cellForItem(at: indexPath) as? MenuViewCell {
+            cell.updateSelectUI(with: select)
+        }
+
+        if select {
+            updateSelectUnderlineView(to: index)
+        }
     }
     
-    func moveUnderlineView(to index: Int) {
+    func updateSelectUnderlineView(to index: Int) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard index < numberOfItem else { return }
         let indexPath = IndexPath(item: index, section: 0)
@@ -234,12 +241,14 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         menuViewDelegate?.menuView(self, didSelectItemAt: indexPath)
         
-        collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
-        updateUIWithIndex(indexPath.item)
+        updateSelectUI(indexPath.item, select: true)
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         menuViewDelegate?.menuView(self, didDeselectItemAt: indexPath)
+        
+        updateSelectUI(indexPath.item, select: false)
     }
     
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String {
@@ -281,22 +290,42 @@ class MenuViewCell: UICollectionViewCell {
         titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
     }
     
-    func updateUI(with precent: CGFloat) {
+    // MARK: 更新滑动UI
+    func updateScrollingUI(with precent: CGFloat) {
         if option.allowSelectedEnlarge {
             let scale = 1 + ((1 - precent) * (option.selectedScale - MenuViewOption.NormalScale))
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
         }
+        
+        titleLable.textColor = updateColor(option.selectedColor, toColor: option.titleColor, percent: precent)
     }
     
-    override var isSelected: Bool {
-        didSet {
-            if isSelected {
-                titleLable.textColor = option.selectedColor
-                titleLable.transform = CGAffineTransform.identity.scaledBy(x: option.selectedScale, y: option.selectedScale)
-            } else {
-                titleLable.textColor = option.titleColor
-                titleLable.transform = CGAffineTransform.identity.scaledBy(x: MenuViewOption.NormalScale, y: MenuViewOption.NormalScale)
-            }
+    fileprivate func updateColor(_ fromColor: UIColor, toColor: UIColor, percent: CGFloat) -> UIColor {
+        var fromR: CGFloat = 0
+        var fromG: CGFloat = 0
+        var fromB: CGFloat = 0
+        var fromA: CGFloat = 0
+        fromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
+        var toR: CGFloat = 0
+        var toG: CGFloat = 0
+        var toB: CGFloat = 0
+        var toA: CGFloat = 0
+        toColor.getRed(&toR, green: &toG, blue: &toB, alpha: &toA)
+        let currentR: CGFloat = fromR + percent * (toR - fromR)
+        let currentG: CGFloat = fromG + percent * (toG - fromG)
+        let currentB: CGFloat = fromB + percent * (toB - fromB)
+        let currentA: CGFloat = fromA + percent * (toA - fromA)
+        return UIColor(red: currentR, green: currentG, blue: currentB, alpha: currentA)
+    }
+    
+    // MARK: 更新选中状态UI
+    func updateSelectUI(with selected: Bool) {
+        if selected {
+            titleLable.textColor = option.selectedColor
+            titleLable.transform = CGAffineTransform.identity.scaledBy(x: option.selectedScale, y: option.selectedScale)
+        } else {
+            titleLable.textColor = option.titleColor
+            titleLable.transform = CGAffineTransform.identity.scaledBy(x: MenuViewOption.NormalScale, y: MenuViewOption.NormalScale)
         }
     }
 }
