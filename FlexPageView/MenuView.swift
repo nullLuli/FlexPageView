@@ -235,6 +235,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MenuViewCell.identifier, for: indexPath)
         (cell as? MenuViewCell)?.setData(text: titles[indexPath.item], textSize: option.titleFont, option: option)
+        (cell as? MenuViewCell)?.updateSelectUI(with: cell.isSelected)  //考虑这样一种情况：menuview将选中的title滑动到屏幕外，然后选中一个title，这时原title会取不到cell，而无法将UI更新为未选中状态
         return cell
     }
     
