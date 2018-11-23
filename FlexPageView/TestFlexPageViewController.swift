@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource {
+class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource, FlexPageViewDataSource {
     var pageView: FlexPageView2 = FlexPageView2()
     static let titles: [String] = ["hhhhh", "22", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
     

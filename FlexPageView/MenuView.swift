@@ -169,7 +169,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         updateScrollingUnderlineView(leftIndex: leftIndex, precent: precent, direction: direction)
     }
     
-    func updateScrollingUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
+    private func updateScrollingUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
         let numberOfItem = numberOfItems(inSection: 0)
         let rightIndex = leftIndex + 1
         if leftIndex > -1, rightIndex < numberOfItem {
@@ -213,7 +213,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         }
     }
     
-    func updateSelectUnderlineView(to index: Int) {
+    private func updateSelectUnderlineView(to index: Int) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard index < numberOfItem else { return }
         let indexPath = IndexPath(item: index, section: 0)
@@ -235,8 +235,11 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MenuViewCell.identifier, for: indexPath)
         (cell as? MenuViewCell)?.setData(text: titles[indexPath.item], textSize: option.titleFont, option: option)
-        (cell as? MenuViewCell)?.updateSelectUI(with: cell.isSelected)  //考虑这样一种情况：menuview将选中的title滑动到屏幕外，然后选中一个title，这时原title会取不到cell，而无法将UI更新为未选中状态
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        (cell as? MenuViewCell)?.updateSelectUI(with: cell.isSelected)  //考虑这样一种情况：menuview将选中的title滑动到屏幕外，然后选中一个title，这时原title会取不到cell，而无法将UI更新为未选中状态
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -301,7 +304,7 @@ class MenuViewCell: UICollectionViewCell {
         titleLable.textColor = updateColor(option.selectedColor, toColor: option.titleColor, percent: precent)
     }
     
-    fileprivate func updateColor(_ fromColor: UIColor, toColor: UIColor, percent: CGFloat) -> UIColor {
+    private func updateColor(_ fromColor: UIColor, toColor: UIColor, percent: CGFloat) -> UIColor {
         var fromR: CGFloat = 0
         var fromG: CGFloat = 0
         var fromB: CGFloat = 0

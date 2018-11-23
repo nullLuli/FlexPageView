@@ -9,10 +9,30 @@
 import Foundation
 import UIKit
 
-class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
+@objc protocol PageViewDataSource {
+    @objc func page(at index: Int) -> LLCollectionCell
+}
+
+@objc protocol FlexPageViewDataSource: PageViewDataSource {
+    @objc func numberOfPage() -> Int
+    @objc func titles() -> [String]
+}
+
+class FlexPageView2: UIView, MenuViewProtocol {
     
-    //界面
-    var scrollView: UIScrollView = UIScrollView()
+    var numberOfPage: Int?
+    let cacheRange: Int = 1
+    var titles: [String] = []
+    
+    var pageView: PageView = PageView()
+    
+    var dataSource: FlexPageViewDataSource? {
+        didSet {
+            pageView.dataSource = dataSource
+            reloadData()
+        }
+    }
+    
     var menuView: MenuView = {
         var option = MenuViewOption()
         option.allowSelectedEnlarge = true
@@ -22,15 +42,69 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
         return view
     }()
     
-    var pagesDic: [Int: LLCollectionCell] = [:]
-    
-    //数据
-    weak var dataSource: SelfDefineCollectionViewDataSource? {
-        didSet {
-            //加载数据
-            reloadData()
-        }
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        addSubview(menuView)
+        addSubview(pageView)
+        menuView.menuViewDelegate = self
+        pageView.flexPageView = self
+        pageView.dataSource = dataSource
     }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func reloadData() {
+        let numberOfPage = dataSource?.numberOfPage() ?? 0
+        self.numberOfPage = numberOfPage
+        
+        pageView.reloadData(numberOfPage: numberOfPage)
+        
+        //menuview
+        if let titles = dataSource?.titles() {
+            assert(titles.count == numberOfPage)
+            self.titles = titles
+            menuView.reloadTitles(titles)
+        }
+        
+        //这种细节不应该出现在这里
+        let indexPath = IndexPath(item: 0, section: 0)
+        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .left)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        menuView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: menuView.frame.height)
+        pageView.frame = CGRect(x: 0, y: menuView.frame.maxY, width: frame.width, height: frame.height - menuView.frame.maxY)
+        pageView.contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)
+    }
+    
+    func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: Direction) {
+        menuView.updateScrollingUI(leftIndex: leftIndex, precent: precent, direction: direction)
+    }
+    
+    func selectItem(at index: Int) {
+        let indexPath = IndexPath(item: index, section: 0)
+        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+    }
+    
+    func menuView(_ menuView: MenuView, didSelectItemAt indexPath: IndexPath) {
+        pageView.selectItem(at: indexPath.item)
+    }
+    
+    func menuView(_ menuView: MenuView, didDeselectItemAt indexPath: IndexPath) {
+    }
+}
+
+class PageView: UIScrollView, UIScrollViewDelegate {
+    
+    weak var flexPageView: FlexPageView2?
+    
+    weak var dataSource: PageViewDataSource?
+    var pagesDic: [Int: LLCollectionCell] = [:]
     
     var numberOfPage: Int?
     var currentIndex: Int = 0
@@ -41,47 +115,30 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
         super.init(frame: frame)
         
         //UI
-        addSubview(menuView)
-        addSubview(scrollView)
-        scrollView.delegate = self
-        scrollView.isPagingEnabled = true
-        menuView.menuViewDelegate = self
+        delegate = self
+        isPagingEnabled = true
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func reloadData() {
-        numberOfPage = dataSource?.numberOfPage()
-        scrollView.contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)
+    func reloadData(numberOfPage: Int) {
+        self.numberOfPage = numberOfPage
+        contentSize = CGSize(width: CGFloat(numberOfPage) * frame.width, height: 0)
         
         //清空scrollview的子view
-        for view in scrollView.subviews {
+        for view in subviews {
             if view is LLCollectionCell {
                 view.removeFromSuperview()
             }
         }
         
-        //menuview
-        if let titles = dataSource?.titles() {
-            assert(titles.count == numberOfPage)
-            self.titles = titles
-            menuView.reloadTitles(titles)
-        }
-        
-        currentIndex = 0
         constructPages()
-        let indexPath = IndexPath(item: currentIndex, section: 0)
-        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .left)
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
-        menuView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: menuView.frame.height)
-        scrollView.frame = CGRect(x: 0, y: menuView.frame.maxY, width: frame.width, height: frame.height - menuView.frame.maxY)
-        scrollView.contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)
         
         layoutPageViews()
     }
@@ -101,7 +158,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
             direction = .right
         }
         
-        menuView.updateScrollingUI(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+        flexPageView?.updateScrollingUI(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
         
         lastOffsetX = scrollView.contentOffset.x
     }
@@ -114,10 +171,9 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         //检查是不是缓存范围的page都显示
         currentIndex = Int(scrollFinalOffset.x / scrollView.frame.width)
-        
+
         constructPages()
-        let indexPath = IndexPath(item: currentIndex, section: 0)
-        menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        flexPageView?.selectItem(at: currentIndex)
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -127,8 +183,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
             currentIndex = scrollViewCurrentIndex
             
             constructPages()
-            let indexPath = IndexPath(item: currentIndex, section: 0)
-            menuView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+            flexPageView?.selectItem(at: currentIndex)
         }
     }
     
@@ -138,7 +193,7 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
         
         for index in beginIndex...endIndex {
             if let pageView = getPage(at: index) {
-                scrollView.addSubview(pageView)
+                addSubview(pageView)
             }
         }
         
@@ -172,22 +227,19 @@ class FlexPageView2: UIView, UIScrollViewDelegate, MenuViewProtocol {
     }
     
     // MARK: 选中处理
-    func menuView(_ menuView: MenuView, didSelectItemAt indexPath: IndexPath) {
-        currentIndex = indexPath.item
+    func selectItem(at index: Int) {
+        currentIndex = index
         
-        let offsetX = CGFloat(currentIndex) * scrollView.frame.width
-        scrollView.contentOffset = CGPoint(x: offsetX, y: scrollView.contentOffset.y)
+        let offsetX = CGFloat(currentIndex) * frame.width
+        contentOffset = CGPoint(x: offsetX, y: contentOffset.y)
         
         constructPages()
     }
-    
-    func menuView(_ menuView: MenuView, didDeselectItemAt indexPath: IndexPath) {
-    }
-    
+
     func layoutPageViews() {
         //调整page在scrollview中的位置
         for (index, pageView) in pagesDic {
-            pageView.frame = CGRect(x: CGFloat(index) * scrollView.frame.width, y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
+            pageView.frame = CGRect(x: CGFloat(index) * frame.width, y: 0, width: frame.width, height: frame.height)
         }
     }    
 }
