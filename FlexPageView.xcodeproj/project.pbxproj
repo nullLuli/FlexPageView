@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3CA55D1C21AA956000BE8D2C /* FlexPageView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA55D1B21AA956000BE8D2C /* FlexPageView2.swift */; };
 		3CCA9BBF219E795400E25133 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BBE219E795400E25133 /* AppDelegate.swift */; };
 		3CCA9BC6219E795600E25133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CCA9BC5219E795600E25133 /* Assets.xcassets */; };
 		3CCA9BC9219E795600E25133 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3CCA9BC7219E795600E25133 /* LaunchScreen.storyboard */; };
@@ -15,7 +16,7 @@
 		3CCA9BE2219E79DA00E25133 /* MenuView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BDF219E79DA00E25133 /* MenuView2.swift */; };
 		3CCA9BE3219E79DA00E25133 /* TestFlexPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BE0219E79DA00E25133 /* TestFlexPageViewController.swift */; };
 		3CCA9BE7219EA11100E25133 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BE6219EA11100E25133 /* MenuView.swift */; };
-		3CCA9BE9219EA1A500E25133 /* PageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BE8219EA1A500E25133 /* PageView.swift */; };
+		3CCA9BE9219EA1A500E25133 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BE8219EA1A500E25133 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3CA55D1B21AA956000BE8D2C /* FlexPageView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexPageView2.swift; sourceTree = "<group>"; };
 		3CCA9BBB219E795400E25133 /* FlexPageView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlexPageView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CCA9BBE219E795400E25133 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3CCA9BC5219E795600E25133 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -41,7 +43,7 @@
 		3CCA9BDF219E79DA00E25133 /* MenuView2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuView2.swift; sourceTree = "<group>"; };
 		3CCA9BE0219E79DA00E25133 /* TestFlexPageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestFlexPageViewController.swift; sourceTree = "<group>"; };
 		3CCA9BE6219EA11100E25133 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
-		3CCA9BE8219EA1A500E25133 /* PageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
+		3CCA9BE8219EA1A500E25133 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,7 +93,8 @@
 				3CCA9BC7219E795600E25133 /* LaunchScreen.storyboard */,
 				3CCA9BCA219E795600E25133 /* Info.plist */,
 				3CCA9BE6219EA11100E25133 /* MenuView.swift */,
-				3CCA9BE8219EA1A500E25133 /* PageView.swift */,
+				3CCA9BE8219EA1A500E25133 /* ContentView.swift */,
+				3CA55D1B21AA956000BE8D2C /* FlexPageView2.swift */,
 			);
 			path = FlexPageView;
 			sourceTree = "<group>";
@@ -208,9 +211,10 @@
 				3CCA9BE7219EA11100E25133 /* MenuView.swift in Sources */,
 				3CCA9BE2219E79DA00E25133 /* MenuView2.swift in Sources */,
 				3CCA9BBF219E795400E25133 /* AppDelegate.swift in Sources */,
+				3CA55D1C21AA956000BE8D2C /* FlexPageView2.swift in Sources */,
 				3CCA9BE1219E79DA00E25133 /* FlexPageView.swift in Sources */,
 				3CCA9BE3219E79DA00E25133 /* TestFlexPageViewController.swift in Sources */,
-				3CCA9BE9219EA1A500E25133 /* PageView.swift in Sources */,
+				3CCA9BE9219EA1A500E25133 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,20 +8,6 @@
 
 import UIKit
 
-struct MenuViewOption {
-    static let NormalScale: CGFloat = 1
-
-    var titleFont: CGFloat = 15
-    var allowSelectedEnlarge: Bool = false
-    var selectedScale: CGFloat = 1
-    var selectedColor: UIColor = UIColor.blue
-    var titleColor: UIColor = UIColor.black
-    var showUnderline: Bool = true
-    var underlineWidth: CGFloat = 10
-    var underlineHeight: CGFloat = 2
-    var defaultSelectIndex: Int = 0
-}
-
 protocol MenuViewLayoutProtocol: class {
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String
 }
@@ -31,17 +17,15 @@ protocol MenuViewProtocol: class {
 }
 
 class MenuViewLayout: UICollectionViewLayout {
-    fileprivate var titleMargin: CGFloat = 30
-    
     weak var delegate: MenuViewLayoutProtocol?
     
-    var option: MenuViewOption
+    var option: FlexPageViewOption
     
     var cache = [UICollectionViewLayoutAttributes]()
     
     var contentWidth: CGFloat = 0
     
-    init(option: MenuViewOption = MenuViewOption()) {
+    init(option: FlexPageViewOption = FlexPageViewOption()) {
         self.option = option
         
         super.init()
@@ -61,7 +45,7 @@ class MenuViewLayout: UICollectionViewLayout {
             let indexPath = IndexPath(item: item, section: 0)
             let title = delegate?.collectionView(collectionView, titleForItemAtIndexPath: indexPath)
             let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
-            let labelWidth = titleWidth + titleMargin
+            let labelWidth = titleWidth + option.titleMargin
             let frame = CGRect(x: contentWidth, y: 0, width: labelWidth, height: collectionView.frame.height)
             contentWidth += labelWidth
             
@@ -96,20 +80,17 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     fileprivate var titles: [String] = []
     
-    var option: MenuViewOption
+    var option: FlexPageViewOption
     
     weak var menuViewDelegate: MenuViewProtocol?
     
-    var underlineView: UIView = {
-        let view = UIView()
-        return view
-    }()
+    var underlineView: UIView = UIView()
     
     var underlineY: CGFloat {
         return bounds.height - option.underlineHeight - 5
     }
     
-    init(frame: CGRect, option: MenuViewOption = MenuViewOption()) {
+    init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption()) {
         self.option = option
         
         let layout = MenuViewLayout(option: option)
@@ -120,13 +101,15 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         layout.delegate = self
         
         addSubview(underlineView)
-        underlineView.backgroundColor = UIColor.yellow
+        underlineView.backgroundColor = option.underlineColor
         underlineView.frame.size = CGSize(width: option.underlineWidth, height: option.underlineHeight)
         
         registCell(self)
         
         self.dataSource = self
         self.delegate = self
+        
+        backgroundColor = UIColor.white
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -135,12 +118,6 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     func registCell(_ collectionView: UICollectionView) {
         collectionView.register(MenuViewCell.self, forCellWithReuseIdentifier: MenuViewCell.identifier)
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        underlineView.frame.origin.y = underlineY
     }
     
     func reloadTitles(_ titles: [String]) {
@@ -274,10 +251,15 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
         }
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        underlineView.frame.origin.y = underlineY
+    }
 }
 
 class MenuViewCell: UICollectionViewCell {
-    var option: MenuViewOption = MenuViewOption()
+    var option: FlexPageViewOption = FlexPageViewOption()
     
     var titleLable: UILabel = {
         let view = UILabel()
@@ -295,7 +277,7 @@ class MenuViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setData(text: String, textSize: CGFloat, option: MenuViewOption) {
+    func setData(text: String, textSize: CGFloat, option: FlexPageViewOption) {
         self.option = option
         titleLable.text = text
         if titleLable.font.pointSize != textSize {
@@ -313,7 +295,7 @@ class MenuViewCell: UICollectionViewCell {
     // MARK: 更新滑动UI
     func updateScrollingUI(with precent: CGFloat) {
         if option.allowSelectedEnlarge {
-            let scale = 1 + ((1 - precent) * (option.selectedScale - MenuViewOption.NormalScale))
+            let scale = 1 + ((1 - precent) * (option.selectedScale - FlexPageViewOption.NormalScale))
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
         }
         
@@ -345,7 +327,7 @@ class MenuViewCell: UICollectionViewCell {
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: option.selectedScale, y: option.selectedScale)
         } else {
             titleLable.textColor = option.titleColor
-            titleLable.transform = CGAffineTransform.identity.scaledBy(x: MenuViewOption.NormalScale, y: MenuViewOption.NormalScale)
+            titleLable.transform = CGAffineTransform.identity.scaledBy(x: FlexPageViewOption.NormalScale, y: FlexPageViewOption.NormalScale)
         }
     }
 }

@@ -9,105 +9,30 @@
 import Foundation
 import UIKit
 
-protocol PageViewDataSource: class {
+protocol ContentViewDataSource: class {
     func page(at index: Int) -> LLCollectionCell
 }
-
-protocol FlexPageViewDataSource: PageViewDataSource {
-    func numberOfPage() -> Int
-    func titles() -> [String]
-}
-
-protocol PageViewProtocol: class {
+protocol ContentViewProtocol: class {
     func selectItemFromScrollPageView(select index: Int)
     func updateScrollingUIFromScrollPageView(leftIndex: Int, precent: CGFloat, direction: Direction)
 }
 
-class FlexPageView2: UIView, MenuViewProtocol, PageViewProtocol {
-    var currentIndex: Int = 0
+class ContentView: UIScrollView, UIScrollViewDelegate {
     
-    var pageView: PageView = PageView()
+    weak var contentViewDelegate: ContentViewProtocol?
     
-    var dataSource: FlexPageViewDataSource? {
-        didSet {
-            pageView.dataSource = dataSource
-            reloadData()
-        }
-    }
-    
-    var menuView: MenuView = {
-        var option = MenuViewOption()
-        option.allowSelectedEnlarge = true
-        option.selectedScale = 1.5
-        let view = MenuView.init(frame: CGRect(x: 0, y: 0, width: 0, height: 40), option: option)
-        view.backgroundColor = UIColor.white
-        return view
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        addSubview(menuView)
-        addSubview(pageView)
-        menuView.menuViewDelegate = self
-        pageView.pageViewDelegate = self
-        pageView.dataSource = dataSource
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func reloadData() {
-        let numberOfPage = dataSource?.numberOfPage() ?? 0
-        
-        pageView.reloadData(numberOfPage: numberOfPage)
-        
-        //menuview
-        if let titles = dataSource?.titles() {
-            assert(titles.count == numberOfPage)
-            menuView.reloadTitles(titles)
-        }
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        menuView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: menuView.frame.height)
-        pageView.frame = CGRect(x: 0, y: menuView.frame.maxY, width: frame.width, height: frame.height - menuView.frame.maxY)
-    }
-    
-    func updateScrollingUIFromScrollPageView(leftIndex: Int, precent: CGFloat, direction: Direction) {
-        menuView.updateScrollingUI(leftIndex: leftIndex, precent: precent, direction: direction)
-    }
-    
-    func selectItemFromScrollPageView(select index: Int) {
-        currentIndex = index
-
-        menuView.selectItem(at: index)
-    }
-    
-    func selectItemFromTapMenuView(select index: Int) {
-        currentIndex = index
-        
-        pageView.selectItem(at: index)
-    }
-}
-
-class PageView: UIScrollView, UIScrollViewDelegate {
-    
-    weak var pageViewDelegate: PageViewProtocol?
-    
-    weak var dataSource: PageViewDataSource?
+    weak var dataSource: ContentViewDataSource?
     
     var pagesDic: [Int: LLCollectionCell] = [:]
     
     var numberOfPage: Int?
-    var currentIndex: Int = 0
+    var currentIndex: Int
     let cacheRange: Int = 1
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(defaultIndex: Int) {
+        currentIndex = defaultIndex
+        
+        super.init(frame: CGRect.zero)
         
         //UI
         delegate = self
@@ -139,12 +64,11 @@ class PageView: UIScrollView, UIScrollViewDelegate {
         layoutPageViews()
     }
     
-    //滑动处理
+    // MARK: 滑动处理
     var lastOffsetX: CGFloat = 0
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //判断现在的滑动位置：left index， precent
         let scrollViewCurrentLeftIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
-//        debugPrint("leftindex \(scrollViewCurrentLeftIndex)")
         let precent = (scrollView.contentOffset.x - (CGFloat(scrollViewCurrentLeftIndex) * scrollView.frame.width)) / scrollView.frame.width
         
         var direction: Direction
@@ -153,10 +77,9 @@ class PageView: UIScrollView, UIScrollViewDelegate {
         } else {
             direction = .right
         }
-        
-        pageViewDelegate?.updateScrollingUIFromScrollPageView(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
-        
         lastOffsetX = scrollView.contentOffset.x
+
+        contentViewDelegate?.updateScrollingUIFromScrollPageView(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
     }
     
     var scrollFinalOffset: CGPoint = CGPoint.zero
@@ -169,17 +92,17 @@ class PageView: UIScrollView, UIScrollViewDelegate {
         currentIndex = Int(scrollFinalOffset.x / scrollView.frame.width)
 
         constructPages()
-        pageViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
+        contentViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let scrollViewCurrentIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
         if scrollViewCurrentIndex != currentIndex {
-            //滑动速度非常快的时候，会出现scrollViewWillEndDragging中预测的targetContentOffset和实际停止的contentOffset不同，这里做一下兼容
+            //滑动速度非常快的时候，会出现scrollViewWillEndDragging中预测的targetContentOffset和实际停止的contentOffset不同，这里做一下处理
             currentIndex = scrollViewCurrentIndex
             
             constructPages()
-            pageViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
+            contentViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
         }
     }
     
@@ -194,7 +117,7 @@ class PageView: UIScrollView, UIScrollViewDelegate {
     }
 
     // MARK: 根据index组织显示页
-    func constructPages() {
+    private func constructPages() {
         let beginIndex = max(currentIndex - cacheRange, 0)
         let endIndex = min(currentIndex + cacheRange, (numberOfPage ?? 1) - 1)
         
@@ -209,7 +132,7 @@ class PageView: UIScrollView, UIScrollViewDelegate {
         layoutPageViews()
     }
     
-    func getPage(at index: Int) -> LLCollectionCell? {
+    private func getPage(at index: Int) -> LLCollectionCell? {
         var pageView = pagesDic[index]
         if pageView == nil {
             pageView = dataSource?.page(at: index)
@@ -222,7 +145,7 @@ class PageView: UIScrollView, UIScrollViewDelegate {
         return pageView
     }
     
-    func clearPageBeyondCache(cacheBegin bIndex: Int, cacheEnd eIndex: Int) {
+    private func clearPageBeyondCache(cacheBegin bIndex: Int, cacheEnd eIndex: Int) {
         for (index, pageView) in pagesDic {
             if index < bIndex || index > eIndex {
                 pagesDic[index] = nil
