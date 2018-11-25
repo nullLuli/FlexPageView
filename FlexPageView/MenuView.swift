@@ -19,15 +19,15 @@ struct MenuViewOption {
     var showUnderline: Bool = true
     var underlineWidth: CGFloat = 10
     var underlineHeight: CGFloat = 2
+    var defaultSelectIndex: Int = 0
 }
 
 protocol MenuViewLayoutProtocol: class {
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String
 }
 
-protocol MenuViewProtocol {
-    func menuView(_ menuView: MenuView, didSelectItemAt indexPath: IndexPath)
-    func menuView(_ menuView: MenuView, didDeselectItemAt indexPath: IndexPath)
+protocol MenuViewProtocol: class {
+    func selectItemFromTapMenuView(select index: Int)
 }
 
 class MenuViewLayout: UICollectionViewLayout {
@@ -98,7 +98,7 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     
     var option: MenuViewOption
     
-    var menuViewDelegate: MenuViewProtocol?
+    weak var menuViewDelegate: MenuViewProtocol?
     
     var underlineView: UIView = {
         let view = UIView()
@@ -140,12 +140,21 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        underlineView.frame.origin.y = bounds.size.height - underlineView.frame.height - 5
+        underlineView.frame.origin.y = underlineY
     }
     
     func reloadTitles(_ titles: [String]) {
         self.titles = titles
         self.reloadData()
+        
+        if indexPathsForSelectedItems?.first == nil {
+            selectItem(at: option.defaultSelectIndex)
+            /*
+             reloadData 后调用 collectionView 的 selectItem 不会触发 didSelectItemAt 方法
+             所以在这里更新下滑条
+             */
+            updateSelectUnderlineView(to: option.defaultSelectIndex)
+        }
     }
     
     // MARK: 根据滑动比例更新UI
@@ -202,25 +211,19 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     }
     
     // MARK: 根据选中位置更新UI
-    func updateSelectUI(_ index: Int, select: Bool) {
+    func selectItem(at index: Int) {
+        guard index < titles.count else { return }
+        
         let indexPath = IndexPath(item: index, section: 0)
-        if let cell = cellForItem(at: indexPath) as? MenuViewCell {
-            cell.updateSelectUI(with: select)
-        }
-
-        if select {
-            updateSelectUnderlineView(to: index)
-        }
+        selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
     }
     
     private func updateSelectUnderlineView(to index: Int) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard index < numberOfItem else { return }
-        let indexPath = IndexPath(item: index, section: 0)
-        if let cell = cellForItem(at: indexPath) {
-            let x = ceil(cell.center.x - option.underlineWidth / 2)
-            underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
-        }
+        let selectCellLayout = (collectionViewLayout as? MenuViewLayout)?.cache[index]
+        let x = ceil(selectCellLayout?.frame.midX ?? 0 - option.underlineWidth / 2)
+        underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
     }
     
     // MARK: UICollectionView
@@ -239,25 +242,38 @@ class MenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewData
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        (cell as? MenuViewCell)?.updateSelectUI(with: cell.isSelected)  //考虑这样一种情况：menuview将选中的title滑动到屏幕外，然后选中一个title，这时原title会取不到cell，而无法将UI更新为未选中状态
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        menuViewDelegate?.menuView(self, didSelectItemAt: indexPath)
-        
-        updateSelectUI(indexPath.item, select: true)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        menuViewDelegate?.menuView(self, didDeselectItemAt: indexPath)
-        
-        updateSelectUI(indexPath.item, select: false)
+        /*
+         1. cell在屏幕外时无法通过 cellForItem 取到cell，所以无法更新cell的UI状态
+         2. reloadData调用后 collectionView 的 selectItem 不会触发 didSelectItemAt 方法 + reloadData调用后无法通过 cellForItem 取到cell
+         在 willDisplay 中调整 cell 的选中状态
+         */
+        if let cell = cell as? MenuViewCell {
+            cell.updateSelectUI(with: cell.isSelected)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, titleForItemAtIndexPath indexPath: IndexPath) -> String {
         return titles[indexPath.item]
     }
+
+    // MARK: 选中处理
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        menuViewDelegate?.selectItemFromTapMenuView(select: indexPath.item)
+        
+        if let cell = cellForItem(at: indexPath) as? MenuViewCell {
+            cell.updateSelectUI(with: cell.isSelected)
+        }
+        updateSelectUnderlineView(to: indexPath.item)
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        
+        if let cell = cellForItem(at: indexPath) as? MenuViewCell {
+            cell.updateSelectUI(with: cell.isSelected)
+        }
+    }
+    
 }
 
 class MenuViewCell: UICollectionViewCell {
