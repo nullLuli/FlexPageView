@@ -25,30 +25,34 @@ struct FlexPageViewOption {
     
     var defaultSelectIndex: Int = 0
     var menuViewHeight: CGFloat = 40
+    var cacheRange: Int = 1
 }
 
 protocol FlexPageViewDataSource: ContentViewDataSource {
     func numberOfPage() -> Int
-    func titles() -> [String]
+    func titleDatas() -> [IMenuViewCellData]
 }
 
-class FlexPageView2: UIView, MenuViewProtocol, ContentViewProtocol {
+protocol FlexPageViewUISource: MenuViewUISource {
+}
+
+class FlexPageView2<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, ContentViewProtocol {
     var currentIndex: Int
     
-    var menuView: MenuView
+    var menuView: MenuView<CellData>
     var contentView: ContentView
     
-    var dataSource: FlexPageViewDataSource? {
+    weak var dataSource: FlexPageViewDataSource? {
         didSet {
             contentView.dataSource = dataSource
             reloadData()
         }
     }
+    weak var uiSource: FlexPageViewUISource?
     
-    
-    init(option: FlexPageViewOption = FlexPageViewOption()) {
-        menuView = MenuView(frame: CGRect(x: 0, y: 0, width: 0, height: option.menuViewHeight), option: option)
-        contentView = ContentView(defaultIndex: option.defaultSelectIndex)
+    init(option: FlexPageViewOption = FlexPageViewOption(), uiSource: FlexPageViewUISource? = nil, layout: MenuViewBaseLayout? = nil) {
+        menuView = MenuView(frame: CGRect(x: 0, y: 0, width: 0, height: option.menuViewHeight), option: option, uiSource: uiSource, layout: layout)
+        contentView = ContentView(option: option)
         currentIndex = option.defaultSelectIndex
         
         super.init(frame: CGRect.zero)
@@ -70,7 +74,7 @@ class FlexPageView2: UIView, MenuViewProtocol, ContentViewProtocol {
         contentView.reloadData(numberOfPage: numberOfPage)
         
         //menuview
-        if let titles = dataSource?.titles() {
+        if let titles = dataSource?.titleDatas() as? [CellData] {
             assert(titles.count == numberOfPage)
             menuView.reloadTitles(titles)
         }

@@ -27,10 +27,12 @@ class ContentView: UIScrollView, UIScrollViewDelegate {
     
     var numberOfPage: Int?
     var currentIndex: Int
-    let cacheRange: Int = 1
     
-    init(defaultIndex: Int) {
-        currentIndex = defaultIndex
+    var option: FlexPageViewOption
+    
+    init(option: FlexPageViewOption) {
+        currentIndex = option.defaultSelectIndex
+        self.option = option
         
         super.init(frame: CGRect.zero)
         
@@ -118,8 +120,8 @@ class ContentView: UIScrollView, UIScrollViewDelegate {
 
     // MARK: 根据index组织显示页
     private func constructPages() {
-        let beginIndex = max(currentIndex - cacheRange, 0)
-        let endIndex = min(currentIndex + cacheRange, (numberOfPage ?? 1) - 1)
+        let beginIndex = max(currentIndex - option.cacheRange, 0)
+        let endIndex = min(currentIndex + option.cacheRange, (numberOfPage ?? 1) - 1)
         
         for index in beginIndex...endIndex {
             if let pageView = getPage(at: index) {

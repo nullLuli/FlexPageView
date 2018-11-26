@@ -9,8 +9,8 @@
 import Foundation
 import UIKit
 
-class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource, FlexPageViewDataSource {
-    var pageView: FlexPageView2?
+class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource, FlexPageViewDataSource, FlexPageViewUISource {
+    var pageView: FlexPageView2<MenuViewCellData2>?
     static let titles: [String] = ["hhhhh", "22", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
     
     override func viewDidLoad() {
@@ -21,7 +21,7 @@ class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewData
         option.allowSelectedEnlarge = true
         option.selectedScale = 1.8
         option.underlineColor = UIColor.red
-        let pageView = FlexPageView2(option: option)
+        let pageView = FlexPageView2<MenuViewCellData2>(option: option, uiSource: self, layout: MenuViewLayout2(option: option))
         pageView.dataSource = self
         view.addSubview(pageView)
         pageView.frame = CGRect(x: 0, y: 20, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - 20)
@@ -32,11 +32,25 @@ class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewData
         return TestFlexPageViewController.titles.count
     }
     
-    func titles() -> [String] {
-        return TestFlexPageViewController.titles
+    func titleDatas() -> [IMenuViewCellData] {
+        var titleDatas: [MenuViewCellData2] = []
+        for title in TestFlexPageViewController.titles {
+            titleDatas.append(MenuViewCellData2(text: title, isHot: true))
+        }
+        return titleDatas
     }
     
     func page(at index: Int) -> LLCollectionCell {
         return LLCollectionCell()
-    }    
+    }
+    
+    func register() -> [String : UICollectionViewCell.Type] {
+        return ["MenuViewCell2": MenuViewCell2.self]
+    }
+    
+    func titles() -> [String] {
+        //SelfDefineCollectionViewDataSource
+        return TestFlexPageViewController.titles
+    }
+
 }
