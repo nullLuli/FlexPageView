@@ -9,19 +9,19 @@
 import Foundation
 import UIKit
 
-protocol ContentViewDataSource: class {
+protocol PageContentViewDataSource: class {
     func page(at index: Int) -> LLCollectionCell
 }
-protocol ContentViewProtocol: class {
-    func selectItemFromScrollPageView(select index: Int)
-    func updateScrollingUIFromScrollPageView(leftIndex: Int, precent: CGFloat, direction: Direction)
+protocol PageContentViewProtocol: class {
+    func selectItemFromPageContentView(select index: Int)
+    func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: Direction)
 }
 
-class ContentView: UIScrollView, UIScrollViewDelegate {
+class PageContentView: UIScrollView, UIScrollViewDelegate {
     
-    weak var contentViewDelegate: ContentViewProtocol?
+    weak var contentViewDelegate: PageContentViewProtocol?
     
-    weak var dataSource: ContentViewDataSource?
+    weak var dataSource: PageContentViewDataSource?
     
     var pagesDic: [Int: LLCollectionCell] = [:]
     
@@ -81,7 +81,7 @@ class ContentView: UIScrollView, UIScrollViewDelegate {
         }
         lastOffsetX = scrollView.contentOffset.x
 
-        contentViewDelegate?.updateScrollingUIFromScrollPageView(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
+        contentViewDelegate?.updateScrollingUIFromPageContentView(leftIndex: scrollViewCurrentLeftIndex, precent: precent, direction: direction)
     }
     
     var scrollFinalOffset: CGPoint = CGPoint.zero
@@ -94,7 +94,7 @@ class ContentView: UIScrollView, UIScrollViewDelegate {
         currentIndex = Int(scrollFinalOffset.x / scrollView.frame.width)
 
         constructPages()
-        contentViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
+        contentViewDelegate?.selectItemFromPageContentView(select: currentIndex)
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -104,7 +104,7 @@ class ContentView: UIScrollView, UIScrollViewDelegate {
             currentIndex = scrollViewCurrentIndex
             
             constructPages()
-            contentViewDelegate?.selectItemFromScrollPageView(select: currentIndex)
+            contentViewDelegate?.selectItemFromPageContentView(select: currentIndex)
         }
     }
     

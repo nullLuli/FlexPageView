@@ -28,7 +28,7 @@ struct FlexPageViewOption {
     var cacheRange: Int = 1
 }
 
-protocol FlexPageViewDataSource: ContentViewDataSource {
+protocol FlexPageViewDataSource: PageContentViewDataSource {
     func numberOfPage() -> Int
     func titleDatas() -> [IMenuViewCellData]
 }
@@ -36,11 +36,9 @@ protocol FlexPageViewDataSource: ContentViewDataSource {
 protocol FlexPageViewUISource: MenuViewUISource {
 }
 
-class FlexPageView2<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, ContentViewProtocol {
-    var currentIndex: Int
-    
+class FlexPageView2<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageContentViewProtocol {
     var menuView: MenuView<CellData>
-    var contentView: ContentView
+    var contentView: PageContentView
     
     weak var dataSource: FlexPageViewDataSource? {
         didSet {
@@ -52,8 +50,7 @@ class FlexPageView2<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, Cont
     
     init(option: FlexPageViewOption = FlexPageViewOption(), uiSource: FlexPageViewUISource? = nil, layout: MenuViewBaseLayout? = nil) {
         menuView = MenuView(frame: CGRect(x: 0, y: 0, width: 0, height: option.menuViewHeight), option: option, uiSource: uiSource, layout: layout)
-        contentView = ContentView(option: option)
-        currentIndex = option.defaultSelectIndex
+        contentView = PageContentView(option: option)
         
         super.init(frame: CGRect.zero)
         
@@ -87,19 +84,15 @@ class FlexPageView2<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, Cont
         contentView.frame = CGRect(x: 0, y: menuView.frame.maxY, width: frame.width, height: frame.height - menuView.frame.maxY)
     }
     
-    func updateScrollingUIFromScrollPageView(leftIndex: Int, precent: CGFloat, direction: Direction) {
+    func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: Direction) {
         menuView.updateScrollingUI(leftIndex: leftIndex, precent: precent, direction: direction)
     }
     
-    func selectItemFromScrollPageView(select index: Int) {
-        currentIndex = index
-        
+    func selectItemFromPageContentView(select index: Int) {
         menuView.selectItem(at: index)
     }
     
     func selectItemFromTapMenuView(select index: Int) {
-        currentIndex = index
-        
         contentView.selectItem(at: index)
     }
 }
