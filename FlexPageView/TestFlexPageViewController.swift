@@ -9,8 +9,8 @@
 import Foundation
 import UIKit
 
-class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewDataSource, FlexPageViewDataSource, FlexPageViewUISource {
-    var pageView: FlexPageView2<MenuViewCellData2>?
+class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
+    var pageView: FlexPageView<MenuViewCellData2>?
     static let titles: [String] = ["hhhhh", "22", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
     
     override func viewDidLoad() {
@@ -21,8 +21,10 @@ class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewData
         option.allowSelectedEnlarge = true
         option.selectedScale = 1.8
         option.underlineColor = UIColor.red
-        let pageView = FlexPageView2<MenuViewCellData2>(option: option, uiSource: self, layout: MenuViewLayout2(option: option))
+        let pageView = FlexPageView<MenuViewCellData2>(option: option, layout: MenuViewLayout2(option: option))
+        pageView.delegate = self
         pageView.dataSource = self
+        pageView.uiSource = self
         view.addSubview(pageView)
         pageView.frame = CGRect(x: 0, y: 20, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - 20)
         self.pageView = pageView
@@ -40,17 +42,32 @@ class TestFlexPageViewController: UIViewController, SelfDefineCollectionViewData
         return titleDatas
     }
     
-    func page(at index: Int) -> LLCollectionCell {
-        return LLCollectionCell()
+    func page(at index: Int) -> UIView {
+        return UIView()
     }
     
+    func pageID(at index: Int) -> Int {
+        return index
+    }
+
     func register() -> [String : UICollectionViewCell.Type] {
         return ["MenuViewCell2": MenuViewCell2.self]
     }
     
-    func titles() -> [String] {
-        //SelfDefineCollectionViewDataSource
-        return TestFlexPageViewController.titles
+    func extraViewAction() {
+        //
+    }
+    
+    func didRemovePage(_ page: UIView, at index: Int) {
+        //
+    }
+    
+    func pageWillAppear(_ page: UIView, at index: Int) {
+        //
+    }
+    
+    func pageWillDisappear(_ page: UIView, at index: Int) {
+        //
     }
 
 }

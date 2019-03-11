@@ -34,14 +34,20 @@ class MenuViewBaseLayout: UICollectionViewLayout {
     weak var delegate: MenuViewLayoutProtocol?
 }
 
-class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewDelegate, UICollectionViewDataSource, MenuViewLayoutProtocol {
+class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewDelegate, UICollectionViewDataSource, MenuViewLayoutProtocol {
     
     fileprivate var datas: [CellData] = []
     
     var option: FlexPageViewOption
     
     weak var menuViewDelegate: MenuViewProtocol?
-    weak var menuViewUISource: MenuViewUISource?
+    weak var menuViewUISource: MenuViewUISource? {
+        didSet {
+            if let uiSource = menuViewUISource {
+                registCell(cellInfo: (uiSource.register()))
+            }
+        }
+    }
     
     var underlineView: UIView = UIView()
     
@@ -49,9 +55,8 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
         return bounds.height - option.underlineHeight - 5
     }
     
-    init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption(), uiSource: MenuViewUISource?, layout: MenuViewBaseLayout? = nil) {
+    init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
         self.option = option
-        menuViewUISource = uiSource
         
         var layoutR: MenuViewBaseLayout
         if let layout = layout {
@@ -61,7 +66,7 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
             layout.option = option
             layoutR = layout
         }
-
+        
         super.init(frame: frame, collectionViewLayout: layoutR)
         
         layoutR.delegate = self
@@ -75,13 +80,8 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
         self.dataSource = self
         self.delegate = self
         
-        if let uiSource = uiSource {
-            registCell(cellInfo: uiSource.register())
-        } else {
-            registCell(cellInfo: [MenuViewCell.identifier: MenuViewCell.self])
-        }
-
         backgroundColor = UIColor.white
+        showsHorizontalScrollIndicator = false
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -94,24 +94,25 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
         }
     }
     
-    func reloadTitles(_ datas: [CellData]) {
+    func reloadTitles(_ datas: [CellData], index: Int? = nil) {
         self.datas = datas
         self.reloadData()
         
         if indexPathsForSelectedItems?.first == nil {
-            selectItem(at: option.defaultSelectIndex)
+            let selectIndex: Int = index ?? option.defaultSelectIndex
+            selectItem(at: selectIndex)
             if option.showUnderline {
                 /*
                  reloadData 后调用 collectionView 的 selectItem 不会触发 didSelectItemAt 方法
                  所以在这里更新下滑条
                  */
-                updateSelectUnderlineView(to: option.defaultSelectIndex)
+                updateSelectUnderlineView(to: selectIndex)
             }
         }
     }
     
     // MARK: 根据滑动比例更新UI
-    func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: Direction) {
+    func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
         if leftIndex > -1 {
@@ -133,7 +134,7 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
         }
     }
     
-    private func updateScrollingUnderlineView(leftIndex: Int, precent: CGFloat, direction: Direction) {
+    private func updateScrollingUnderlineView(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
         let numberOfItem = numberOfItems(inSection: 0)
         let rightIndex = leftIndex + 1
         if leftIndex > -1, rightIndex < numberOfItem {
@@ -169,8 +170,17 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
     func selectItem(at index: Int) {
         guard index < datas.count else { return }
         
+        let lastSelectIndexPath = indexPathsForSelectedItems?.first
         let indexPath = IndexPath(item: index, section: 0)
         selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
+        updateSelectUnderlineView(to: index)
+        
+        let cell = cellForItem(at: indexPath)
+        (cell as? IMenuViewCell)?.updateSelectUI()
+        if let lastSelectIndexPath = lastSelectIndexPath {
+            let cell = cellForItem(at: lastSelectIndexPath)
+            (cell as? IMenuViewCell)?.updateSelectUI()
+        }
     }
     
     private func updateSelectUnderlineView(to index: Int) {
@@ -178,7 +188,8 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
         guard index < numberOfItem else { return }
         let indexPath = IndexPath(item: index, section: 0)
         let selectCellLayout = collectionViewLayout.layoutAttributesForItem(at: indexPath)
-        let x = ceil(selectCellLayout?.frame.midX ?? 0 - option.underlineWidth / 2)
+        let midX = selectCellLayout?.frame.midX ?? 0
+        let x = midX - (option.underlineWidth / 2)
         underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
     }
     
@@ -213,8 +224,8 @@ class MenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, dataForItemAtIndexPath indexPath: IndexPath) -> Any {
         return datas[indexPath.item]
     }
-
-    // MARK: 选中处理
+    
+    // MARK: 用户选中处理
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         menuViewDelegate?.selectItemFromTapMenuView(select: indexPath.item)
         
