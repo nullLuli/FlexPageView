@@ -19,8 +19,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow()
         window?.frame = UIScreen.main.bounds
         window?.makeKeyAndVisible()
-        window?.rootViewController = TestFlexPageViewController()
         window?.backgroundColor = UIColor.white
+        
+        let nav = UINavigationController(rootViewController: HomeController())
+        window?.rootViewController = nav
+
 
         return true
     }

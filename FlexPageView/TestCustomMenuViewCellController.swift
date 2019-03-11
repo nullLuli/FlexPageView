@@ -1,16 +1,16 @@
 //
-//  TestSelfDefineCollectionView.swift
-//  swiftLearn
+//  TestCustomMenuViewCellController.swift
+//  FlexPageView
 //
-//  Created by nullLuli on 2018/11/1.
-//  Copyright © 2018年 nullLuli. All rights reserved.
+//  Created by nullLuli on 2019/3/11.
+//  Copyright © 2019 nullLuli. All rights reserved.
 //
 
 import Foundation
 import UIKit
 
-class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
-    var pageView: FlexPageView<MenuViewCellData>?
+class TestCustomMenuViewCellController: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
+    var pageView: FlexPageView<MenuViewCellData2>?
     static let titles: [String] = ["hhhhh", "22", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh", "hhhhh", "22222", "hh333hhh", "hh44hhh"]
     
     override func viewDidLoad() {
@@ -22,7 +22,7 @@ class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, Flex
         option.allowSelectedEnlarge = true
         option.selectedScale = 1.8
         option.underlineColor = UIColor.red
-        let pageView = FlexPageView<MenuViewCellData>(option: option, layout: MenuViewLayout(option: option))
+        let pageView = FlexPageView<MenuViewCellData2>(option: option, layout: MenuViewLayout2(option: option))
         pageView.delegate = self
         pageView.dataSource = self
         pageView.uiSource = self
@@ -37,9 +37,9 @@ class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, Flex
     }
     
     func titleDatas() -> [IMenuViewCellData] {
-        var titleDatas: [MenuViewCellData] = []
+        var titleDatas: [MenuViewCellData2] = []
         for title in TestFlexPageViewController.titles {
-            titleDatas.append(MenuViewCellData(title: title))
+            titleDatas.append(MenuViewCellData2(text: title, isHot: true))
         }
         return titleDatas
     }
@@ -53,9 +53,9 @@ class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, Flex
     func pageID(at index: Int) -> Int {
         return index
     }
-
+    
     func register() -> [String : UICollectionViewCell.Type] {
-        return ["MenuViewCell": MenuViewCell.self]
+        return ["MenuViewCell2": MenuViewCell2.self]
     }
     
     func extraViewAction() {
@@ -73,17 +73,5 @@ class TestFlexPageViewController: UIViewController, FlexPageViewDataSource, Flex
     func pageWillDisappear(_ page: UIView, at index: Int) {
         //
     }
-
-}
-
-extension UIColor {
-    //返回随机颜色
-    open class var randomColor: UIColor{
-        get {
-            let red = CGFloat(arc4random()%256)/255.0
-            let green = CGFloat(arc4random()%256)/255.0
-            let blue = CGFloat(arc4random()%256)/255.0
-            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
-        }
-    }
+    
 }
