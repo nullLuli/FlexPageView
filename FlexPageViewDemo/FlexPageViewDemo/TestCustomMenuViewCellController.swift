@@ -9,16 +9,16 @@
 import Foundation
 import UIKit
 
-class TestCustomMenuViewCellController: BaseTestFlexPageViewController<MenuViewCellData2, MenuViewCell2> {
-    override var cellDatas: [MenuViewCellData2] {
-        var titleDatas: [MenuViewCellData2] = []
+class TestCustomMenuViewCellController: BaseTestFlexPageViewController<MenuViewCustomCellData, MenuViewCustomCell> {
+    override var cellDatas: [MenuViewCustomCellData] {
+        var titleDatas: [MenuViewCustomCellData] = []
         for title in titles {
-            titleDatas.append(MenuViewCellData2(text: title, isHot: true))
+            titleDatas.append(MenuViewCustomCellData(text: title, isHot: true))
         }
         return titleDatas
     }
     
     override var layout: MenuViewBaseLayout {
-        return MenuViewLayout2()
+        return MenuViewCustomLayout()
     }
 }

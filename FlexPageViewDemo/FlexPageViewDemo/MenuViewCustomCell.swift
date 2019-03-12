@@ -9,16 +9,16 @@
 import Foundation
 import UIKit
 
-struct MenuViewCellData2: IMenuViewCellData {
+struct MenuViewCustomCellData: IMenuViewCellData {
     var text: String
     var isHot: Bool
     
     var CellClass: UICollectionViewCell.Type {
-        return MenuViewCell2.self
+        return MenuViewCustomCell.self
     }
 }
 
-class MenuViewLayout2: MenuViewBaseLayout {
+class MenuViewCustomLayout: MenuViewBaseLayout {
     var option: FlexPageViewOption
     
     var cache = [UICollectionViewLayoutAttributes]()
@@ -43,7 +43,7 @@ class MenuViewLayout2: MenuViewBaseLayout {
         
         for item in 0 ..< collectionView.numberOfItems(inSection: 0) {
             let indexPath = IndexPath(item: item, section: 0)
-            let title = (delegate?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCellData2)?.text
+            let title = (delegate?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCustomCellData)?.text
             let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
             let labelWidth = titleWidth + option.titleMargin
             let frame = CGRect(x: contentWidth, y: 0, width: labelWidth, height: collectionView.frame.height)
@@ -76,7 +76,7 @@ class MenuViewLayout2: MenuViewBaseLayout {
     }
 }
 
-class MenuViewCell2: UICollectionViewCell, IMenuViewCell {
+class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
     var option: FlexPageViewOption = FlexPageViewOption()
     
     var titleLable: UILabel = {
@@ -112,7 +112,7 @@ class MenuViewCell2: UICollectionViewCell, IMenuViewCell {
     
     // MARK: 更新数据
     func setData(data: IMenuViewCellData, option: FlexPageViewOption) {
-        guard let data = data as? MenuViewCellData2 else {
+        guard let data = data as? MenuViewCustomCellData else {
             assertionFailure()
             return
         }
