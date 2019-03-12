@@ -18,12 +18,15 @@ struct MenuViewCustomCellData: IMenuViewCellData {
     }
 }
 
+let HotImageViewWidth: CGFloat = 32
+let HotImageMargin: CGFloat = 3
+
 class MenuViewCustomLayout: MenuViewBaseLayout {
     var option: FlexPageViewOption
     
     var cache = [UICollectionViewLayoutAttributes]()
     
-    var contentWidth: CGFloat = 0
+    var contentMaxX: CGFloat = 0
     
     init(option: FlexPageViewOption = FlexPageViewOption()) {
         self.option = option
@@ -39,16 +42,17 @@ class MenuViewCustomLayout: MenuViewBaseLayout {
         guard let collectionView = collectionView else { return }
         
         cache = [UICollectionViewLayoutAttributes]()
-        contentWidth = 0
+        contentMaxX = 0
         
         for item in 0 ..< collectionView.numberOfItems(inSection: 0) {
             let indexPath = IndexPath(item: item, section: 0)
             let title = (delegate?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCustomCellData)?.text
             let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
             let labelWidth = titleWidth + option.titleMargin
-            let frame = CGRect(x: contentWidth, y: 0, width: labelWidth, height: collectionView.frame.height)
-            contentWidth += labelWidth
-            
+            let contentWidth = labelWidth + HotImageViewWidth + HotImageMargin
+            let frame = CGRect(x: contentMaxX, y: 0, width: contentWidth, height: collectionView.frame.height)
+            contentMaxX += contentWidth
+
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
             attributes.frame = frame
             cache.append(attributes)
@@ -56,7 +60,7 @@ class MenuViewCustomLayout: MenuViewBaseLayout {
     }
     
     override var collectionViewContentSize: CGSize {
-        return CGSize(width: contentWidth, height: 0)
+        return CGSize(width: contentMaxX, height: 0)
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
@@ -107,7 +111,7 @@ class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
         
         titleLable.sizeToFit()
         titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
-        hotImageView.frame = CGRect(x: titleLable.frame.maxX + 3, y: 0, width: 32, height: 32)
+        hotImageView.frame = CGRect(x: titleLable.frame.maxX + HotImageMargin, y: 0, width: HotImageViewWidth, height: HotImageViewWidth)
     }
     
     // MARK: 更新数据

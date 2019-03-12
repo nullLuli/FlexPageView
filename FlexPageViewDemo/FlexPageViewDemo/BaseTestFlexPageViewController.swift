@@ -34,6 +34,11 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         option.underlineColor = UIColor(rgb: 0x4285F4)
         option.selectedColor = UIColor(rgb: 0x262626)
         option.titleColor = UIColor(rgb: 0x999CA0)
+        option.extraImageName = "ic_nav_menu"
+        option.extraImageSize = CGSize(width: 50, height: 40)
+        option.extraMaskImageName = "Rectangle"
+        option.extraMaskImageSize = CGSize(width: 50, height: 40)
+
         let pageView = FlexPageView<CellData>(option: option, layout: layout)
         pageView.delegate = self
         pageView.dataSource = self
@@ -69,7 +74,16 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
     }
     
     func extraViewAction() {
-        //
+        let label = UILabel()
+        label.text = "extraViewAction"
+        view.addSubview(label)
+        label.sizeToFit()
+        label.center = view.center
+        label.backgroundColor = UIColor.black
+        label.textColor = UIColor.white
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+            label.removeFromSuperview()
+        }
     }
     
     func didRemovePage(_ page: UIView, at index: Int) {
