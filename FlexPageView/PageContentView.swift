@@ -265,20 +265,6 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
     }
 }
 
-extension PageContentView {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let touchV = super.hitTest(point, with: event)
-        if let view = touchV {
-            if view.isKind(of: UISlider.classForCoder()) {
-                self.isScrollEnabled = false
-            } else {
-                self.isScrollEnabled = true
-            }
-        }
-        return touchV
-    }
-}
-
 enum FlexPageDirection {
     case left
     case right
