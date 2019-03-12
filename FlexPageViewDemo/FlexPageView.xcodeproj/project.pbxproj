@@ -12,6 +12,8 @@
 		3C37A44C22376B1A002546BA /* PageContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37A44822376B1A002546BA /* PageContentView.swift */; };
 		3C37A44D22376B1A002546BA /* FlexPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37A44922376B1A002546BA /* FlexPageView.swift */; };
 		3C37A44E22376B1A002546BA /* FlexMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37A44A22376B1A002546BA /* FlexMenuView.swift */; };
+		3C37A45022378C3D002546BA /* ContentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37A44F22378C3D002546BA /* ContentController.swift */; };
+		3C37A45222378E81002546BA /* BaseTestFlexPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C37A45122378E81002546BA /* BaseTestFlexPageViewController.swift */; };
 		3C7CCD78223655DC003E18B7 /* TestCustomMenuViewCellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7CCD77223655DC003E18B7 /* TestCustomMenuViewCellController.swift */; };
 		3C7CCD7A2236560C003E18B7 /* HomeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7CCD792236560C003E18B7 /* HomeController.swift */; };
 		3CCA9BBF219E795400E25133 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BBE219E795400E25133 /* AppDelegate.swift */; };
@@ -37,6 +39,8 @@
 		3C37A44822376B1A002546BA /* PageContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageContentView.swift; sourceTree = "<group>"; };
 		3C37A44922376B1A002546BA /* FlexPageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlexPageView.swift; sourceTree = "<group>"; };
 		3C37A44A22376B1A002546BA /* FlexMenuView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlexMenuView.swift; sourceTree = "<group>"; };
+		3C37A44F22378C3D002546BA /* ContentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentController.swift; sourceTree = "<group>"; };
+		3C37A45122378E81002546BA /* BaseTestFlexPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseTestFlexPageViewController.swift; sourceTree = "<group>"; };
 		3C7CCD77223655DC003E18B7 /* TestCustomMenuViewCellController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCustomMenuViewCellController.swift; sourceTree = "<group>"; };
 		3C7CCD792236560C003E18B7 /* HomeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeController.swift; sourceTree = "<group>"; };
 		3CCA9BBB219E795400E25133 /* FlexPageView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlexPageView.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,8 +77,10 @@
 			children = (
 				3CCA9BC7219E795600E25133 /* LaunchScreen.storyboard */,
 				3C375E4E21AC1AA400E1C8C3 /* MenuViewCell2.swift */,
+				3C37A45122378E81002546BA /* BaseTestFlexPageViewController.swift */,
 				3CCA9BE0219E79DA00E25133 /* TestFlexPageViewController.swift */,
 				3C7CCD77223655DC003E18B7 /* TestCustomMenuViewCellController.swift */,
+				3C37A44F22378C3D002546BA /* ContentController.swift */,
 				3C7CCD792236560C003E18B7 /* HomeController.swift */,
 				3CCA9BBE219E795400E25133 /* AppDelegate.swift */,
 				3CCA9BCA219E795600E25133 /* Info.plist */,
@@ -226,10 +232,12 @@
 				3C37A44E22376B1A002546BA /* FlexMenuView.swift in Sources */,
 				3C7CCD78223655DC003E18B7 /* TestCustomMenuViewCellController.swift in Sources */,
 				3CCA9BBF219E795400E25133 /* AppDelegate.swift in Sources */,
+				3C37A45022378C3D002546BA /* ContentController.swift in Sources */,
 				3C375E4F21AC1AA400E1C8C3 /* MenuViewCell2.swift in Sources */,
 				3C37A44C22376B1A002546BA /* PageContentView.swift in Sources */,
 				3C37A44D22376B1A002546BA /* FlexPageView.swift in Sources */,
 				3C7CCD7A2236560C003E18B7 /* HomeController.swift in Sources */,
+				3C37A45222378E81002546BA /* BaseTestFlexPageViewController.swift in Sources */,
 				3CCA9BE3219E79DA00E25133 /* TestFlexPageViewController.swift in Sources */,
 				3C37A44B22376B1A002546BA /* MenuViewCell.swift in Sources */,
 			);
