@@ -30,6 +30,7 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         option.titleMargin = 70
         option.allowSelectedEnlarge = true
         option.selectedScale = 1.3
+        option.preloadRange = 1
         option.underlineColor = UIColor(rgb: 0x4285F4)
         option.selectedColor = UIColor(rgb: 0x262626)
         option.titleColor = UIColor(rgb: 0x999CA0)
