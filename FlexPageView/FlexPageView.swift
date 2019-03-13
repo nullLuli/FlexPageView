@@ -10,32 +10,34 @@ import Foundation
 import UIKit
 
 public struct FlexPageViewOption {
-    static let NormalScale: CGFloat = 1
+    public static let NormalScale: CGFloat = 1
     
-    var titleFont: CGFloat = 15
-    var titleMargin: CGFloat = 30
-    var allowSelectedEnlarge: Bool = false
-    var selectedScale: CGFloat = 1.2
-    var selectedColor: UIColor = UIColor.blue
-    var titleColor: UIColor = UIColor.black
-    var showUnderline: Bool = true
-    var underlineWidth: CGFloat = 10
-    var underlineHeight: CGFloat = 2
-    var underlineColor: UIColor = UIColor.blue
+    public var titleFont: CGFloat = 15
+    public var titleMargin: CGFloat = 30
+    public var allowSelectedEnlarge: Bool = false
+    public var selectedScale: CGFloat = 1.2
+    public var selectedColor: UIColor = UIColor.blue
+    public var titleColor: UIColor = UIColor.black
+    public var showUnderline: Bool = true
+    public var underlineWidth: CGFloat = 10
+    public var underlineHeight: CGFloat = 2
+    public var underlineColor: UIColor = UIColor.blue
 
-    var parallaxPrecent: CGFloat = 0 //滑动切换页面时的视差动效
+    public var parallaxPrecent: CGFloat = 0 //滑动切换页面时的视差动效
     
-    var defaultSelectIndex: Int = 0
-    var menuViewHeight: CGFloat = 40
-    var cacheRange: Int = 2   //缓存
-    var preloadRange: Int = 0 //预加载
+    public var defaultSelectIndex: Int = 0
+    public var menuViewHeight: CGFloat = 40
+    public var cacheRange: Int = 2   //缓存
+    public var preloadRange: Int = 0 //预加载
     //这样会有个问题，缓存一定要大于预加载，不然预加载完了会因为不在缓存范围被清除。也就是contentview没能力标明该页面是属于预加载还是缓存
     
-    var showExtraView = true
-    var extraImageName = ""
-    var extraImageSize: CGSize = CGSize.zero
-    var extraMaskImageName = ""
-    var extraMaskImageSize: CGSize = CGSize.zero
+    public var showExtraView = true
+    public var extraImageName = ""
+    public var extraImageSize: CGSize = CGSize.zero
+    public var extraMaskImageName = ""
+    public var extraMaskImageSize: CGSize = CGSize.zero
+    
+    public init() {}
 }
 
 public protocol FlexPageViewDataSource: PageContentViewDataSource {

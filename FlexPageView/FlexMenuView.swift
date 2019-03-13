@@ -30,8 +30,8 @@ public protocol IMenuViewCellData {
     var CellClass: UICollectionViewCell.Type { get }
 }
 
-public class MenuViewBaseLayout: UICollectionViewLayout {
-    weak var delegate: MenuViewLayoutProtocol?
+open class MenuViewBaseLayout: UICollectionViewLayout {
+    public weak var delegate: MenuViewLayoutProtocol?
 }
 
 class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewDelegate, UICollectionViewDataSource, MenuViewLayoutProtocol {
