@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import FlexPageView
 
 class ContentController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     let tableView: UITableView = UITableView()

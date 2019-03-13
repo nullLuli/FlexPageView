@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import FlexPageView
 
 struct MenuViewCustomCellData: IMenuViewCellData {
     var text: String

@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import FlexPageView
 
 class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollectionViewCell>: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
     var pageView: FlexPageView<CellData>?
