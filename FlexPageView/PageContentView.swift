@@ -9,17 +9,17 @@
 import Foundation
 import UIKit
 
-protocol PageContentViewDataSource: class {
+public protocol PageContentViewDataSource: class {
     func page(at index: Int) -> UIView
     func pageID(at index: Int) -> Int
 }
-protocol PageContentViewPageChangeProtocol: class {
+public protocol PageContentViewPageChangeProtocol: class {
     func didRemovePage(_ page: UIView, at index: Int)
     func pageWillAppear(_ page: UIView, at index: Int)
     func pageWillDisappear(_ page: UIView, at index: Int)
 }
 
-protocol PageContentViewUserInteractionProtocol: class {
+internal protocol PageContentViewUserInteractionProtocol: class {
     func selectItemFromPageContentView(select index: Int)
     func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection)
 }
@@ -260,7 +260,7 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
     }
     
     
-    public var currentPage: UIView? {
+    var currentPage: UIView? {
         return pagesIndexDic[currentIndex]?.view
     }
 }

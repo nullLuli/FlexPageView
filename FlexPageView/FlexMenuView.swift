@@ -8,29 +8,29 @@
 
 import UIKit
 
-protocol MenuViewLayoutProtocol: class {
+public protocol MenuViewLayoutProtocol: class {
     func collectionView(_ collectionView: UICollectionView, dataForItemAtIndexPath indexPath: IndexPath) -> Any
 }
 
-protocol MenuViewProtocol: class {
+internal protocol MenuViewProtocol: class {
     func selectItemFromTapMenuView(select index: Int)
 }
 
-protocol MenuViewUISource: class {
+public protocol MenuViewUISource: class {
     func register() -> [String: UICollectionViewCell.Type]
 }
 
-protocol IMenuViewCell {
+public protocol IMenuViewCell {
     func updateScrollingUI(with precent: CGFloat)
     func updateSelectUI()
     func setData(data: IMenuViewCellData, option: FlexPageViewOption)
 }
 
-protocol IMenuViewCellData {
+public protocol IMenuViewCellData {
     var CellClass: UICollectionViewCell.Type { get }
 }
 
-class MenuViewBaseLayout: UICollectionViewLayout {
+public class MenuViewBaseLayout: UICollectionViewLayout {
     weak var delegate: MenuViewLayoutProtocol?
 }
 
@@ -38,10 +38,10 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
     
     fileprivate var datas: [CellData] = []
     
-    var option: FlexPageViewOption
+    internal var option: FlexPageViewOption
     
-    weak var menuViewDelegate: MenuViewProtocol?
-    weak var menuViewUISource: MenuViewUISource? {
+    internal weak var menuViewDelegate: MenuViewProtocol?
+    internal weak var menuViewUISource: MenuViewUISource? {
         didSet {
             if let uiSource = menuViewUISource {
                 registCell(cellInfo: (uiSource.register()))
@@ -49,13 +49,13 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
-    var underlineView: UIView = UIView()
+    private var underlineView: UIView = UIView()
     
-    var underlineY: CGFloat {
+    private var underlineY: CGFloat {
         return bounds.height - option.underlineHeight - 5
     }
     
-    init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
+    internal init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
         self.option = option
         
         var layoutR: MenuViewBaseLayout
@@ -88,13 +88,13 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         fatalError("init(coder:) has not been implemented")
     }
     
-    func registCell(cellInfo: [String: AnyClass]) {
+    private func registCell(cellInfo: [String: AnyClass]) {
         for (identifier, cell) in cellInfo {
             register(cell, forCellWithReuseIdentifier: identifier)
         }
     }
     
-    func reloadTitles(_ datas: [CellData], index: Int? = nil) {
+    internal func reloadTitles(_ datas: [CellData], index: Int? = nil) {
         self.datas = datas
         self.reloadData()
         
@@ -112,7 +112,7 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
     }
     
     // MARK: 根据滑动比例更新UI
-    func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
+    public func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
         if leftIndex > -1 {
@@ -167,7 +167,7 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
     }
     
     // MARK: 根据选中位置更新UI
-    func selectItem(at index: Int) {
+    internal func selectItem(at index: Int) {
         guard index < datas.count else { return }
         
         let lastSelectIndexPath = indexPathsForSelectedItems?.first

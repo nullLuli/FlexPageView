@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-struct FlexPageViewOption {
+public struct FlexPageViewOption {
     static let NormalScale: CGFloat = 1
     
     var titleFont: CGFloat = 15
@@ -38,19 +38,19 @@ struct FlexPageViewOption {
     var extraMaskImageSize: CGSize = CGSize.zero
 }
 
-protocol FlexPageViewDataSource: PageContentViewDataSource {
+public protocol FlexPageViewDataSource: PageContentViewDataSource {
     func numberOfPage() -> Int
     func titleDatas() -> [IMenuViewCellData]
 }
 
-protocol FlexPageViewDelegate: PageContentViewPageChangeProtocol {
+public protocol FlexPageViewDelegate: PageContentViewPageChangeProtocol {
     func extraViewAction()
 }
 
-protocol FlexPageViewUISource: MenuViewUISource {
+public protocol FlexPageViewUISource: MenuViewUISource {
 }
 
-class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageContentViewUserInteractionProtocol {
+public class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageContentViewUserInteractionProtocol {
     private var menuView: FlexMenuView<CellData>
     private var extraView: UIButton = UIButton()
     private var extralMaskView: UIImageView = UIImageView()
@@ -58,13 +58,13 @@ class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageC
     
     private var option: FlexPageViewOption
     
-    weak var uiSource: FlexPageViewUISource? {
+    public weak var uiSource: FlexPageViewUISource? {
         didSet {
             menuView.menuViewUISource = uiSource
         }
     }
     
-    weak var dataSource: FlexPageViewDataSource? {
+    public weak var dataSource: FlexPageViewDataSource? {
         didSet {
             contentView.dataSource = dataSource
             reloadData()
@@ -72,13 +72,13 @@ class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageC
     }
     
     //delegate需要在datasource赋值前赋值，因为datasource赋值后会reloaddata，reloaddata中用到了delegate
-    weak var delegate: FlexPageViewDelegate? {
+    public weak var delegate: FlexPageViewDelegate? {
         didSet {
             contentView.pageChangeDelegate = delegate
         }
     }
     
-    init(option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
+    public init(option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
         menuView = FlexMenuView(frame: CGRect(x: 0, y: 0, width: 0, height: option.menuViewHeight), option: option, layout: layout)
         contentView = PageContentView(option: option)
         self.option = option
@@ -105,7 +105,7 @@ class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageC
         fatalError("init(coder:) has not been implemented")
     }
     
-    func reloadData() {
+    public func reloadData() {
         let numberOfPage = dataSource?.numberOfPage() ?? 0
         
         contentView.reloadData(numberOfPage: numberOfPage)
@@ -117,7 +117,7 @@ class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageC
         }
     }
     
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         
         if option.showExtraView {
@@ -135,19 +135,19 @@ class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol, PageC
         contentView.contentOffset = CGPoint(x: CGFloat(contentView.currentIndex) * frame.width, y: contentView.contentOffset.y)
     }
     
-    func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
+    internal func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
         menuView.updateScrollingUI(leftIndex: leftIndex, precent: precent, direction: direction)
     }
     
-    func selectItemFromPageContentView(select index: Int) {
+    internal func selectItemFromPageContentView(select index: Int) {
         menuView.selectItem(at: index)
     }
     
-    func selectItemFromTapMenuView(select index: Int) {
+    internal func selectItemFromTapMenuView(select index: Int) {
         contentView.selectItem(at: index)
     }
     
-    func extraViewAction() {
+    internal func extraViewAction() {
         delegate?.extraViewAction()
     }
     
