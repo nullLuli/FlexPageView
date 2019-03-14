@@ -28,6 +28,7 @@ public protocol IMenuViewCell {
 
 public protocol IMenuViewCellData {
     var CellClass: UICollectionViewCell.Type { get }
+    var identifier: String { get }
 }
 
 open class MenuViewBaseLayout: UICollectionViewLayout {
@@ -205,7 +206,7 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard indexPath.item < datas.count else { return UICollectionViewCell() }
         let data = datas[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: data.CellClass.identifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: data.identifier, for: indexPath)
         (cell as? IMenuViewCell)?.setData(data: data, option: option)
         return cell
     }

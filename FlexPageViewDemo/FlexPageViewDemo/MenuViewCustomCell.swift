@@ -17,6 +17,10 @@ struct MenuViewCustomCellData: IMenuViewCellData {
     var CellClass: UICollectionViewCell.Type {
         return MenuViewCustomCell.self
     }
+    
+    var identifier: String {
+        return MenuViewCustomCell.identifier
+    }
 }
 
 let HotImageViewWidth: CGFloat = 32

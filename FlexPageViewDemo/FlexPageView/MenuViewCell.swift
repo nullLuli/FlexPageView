@@ -9,22 +9,30 @@
 import Foundation
 import UIKit
 
-struct MenuViewCellData: IMenuViewCellData {
-    var title: String
+public struct MenuViewCellData: IMenuViewCellData {
+    public var title: String
     
-    var CellClass: UICollectionViewCell.Type {
+    public var CellClass: UICollectionViewCell.Type {
         return MenuViewCell.self
+    }
+    
+    public var identifier: String {
+        return "MenuViewCell"
+    }
+    
+    public init(title: String) {
+        self.title = title
     }
 }
 
-class MenuViewLayout: MenuViewBaseLayout {
+public class MenuViewLayout: MenuViewBaseLayout {
     var option: FlexPageViewOption
     
     var cache = [UICollectionViewLayoutAttributes]()
     
     var contentWidth: CGFloat = 0
     
-    init(option: FlexPageViewOption = FlexPageViewOption()) {
+    public init(option: FlexPageViewOption = FlexPageViewOption()) {
         self.option = option
         
         super.init()
@@ -34,7 +42,7 @@ class MenuViewLayout: MenuViewBaseLayout {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func prepare() {
+    override public func prepare() {
         guard let collectionView = collectionView else { return }
         
         cache = [UICollectionViewLayoutAttributes]()
@@ -54,11 +62,11 @@ class MenuViewLayout: MenuViewBaseLayout {
         }
     }
     
-    override var collectionViewContentSize: CGSize {
+    override public var collectionViewContentSize: CGSize {
         return CGSize(width: contentWidth, height: 0)
     }
     
-    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+    override public func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         var visibleLayoutAttributes = [UICollectionViewLayoutAttributes]()
         
         // Loop through the cache and look for items in the rect
@@ -70,12 +78,12 @@ class MenuViewLayout: MenuViewBaseLayout {
         return visibleLayoutAttributes
     }
     
-    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+    override public func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         return cache[indexPath.item]
     }
 }
 
-class MenuViewCell: UICollectionViewCell, IMenuViewCell {
+public class MenuViewCell: UICollectionViewCell, IMenuViewCell {
     var option: FlexPageViewOption = FlexPageViewOption()
     
     var titleLable: UILabel = {
@@ -94,7 +102,7 @@ class MenuViewCell: UICollectionViewCell, IMenuViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         
         titleLable.sizeToFit()
@@ -102,7 +110,7 @@ class MenuViewCell: UICollectionViewCell, IMenuViewCell {
     }
 
     // MARK: 更新数据
-    func setData(data: IMenuViewCellData, option: FlexPageViewOption) {
+    public func setData(data: IMenuViewCellData, option: FlexPageViewOption) {
         guard let data = data as? MenuViewCellData else {
             assertionFailure()
             return
@@ -115,7 +123,7 @@ class MenuViewCell: UICollectionViewCell, IMenuViewCell {
     }
     
     // MARK: 更新滑动UI
-    func updateScrollingUI(with precent: CGFloat) {
+    public func updateScrollingUI(with precent: CGFloat) {
         if option.allowSelectedEnlarge {
             let scale = 1 + ((1 - precent) * (option.selectedScale - FlexPageViewOption.NormalScale))
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
@@ -143,7 +151,7 @@ class MenuViewCell: UICollectionViewCell, IMenuViewCell {
     }
     
     // MARK: 更新选中状态UI
-    func updateSelectUI() {
+    public func updateSelectUI() {
         if isSelected {
             titleLable.textColor = option.selectedColor
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: option.selectedScale, y: option.selectedScale)
@@ -151,11 +159,5 @@ class MenuViewCell: UICollectionViewCell, IMenuViewCell {
             titleLable.textColor = option.titleColor
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: FlexPageViewOption.NormalScale, y: FlexPageViewOption.NormalScale)
         }
-    }
-}
-
-extension UICollectionViewCell {
-    static var identifier: String {
-        return String(describing: self)
     }
 }

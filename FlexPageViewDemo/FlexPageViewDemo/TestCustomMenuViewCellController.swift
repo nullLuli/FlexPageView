@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import FlexPageView
 
 class TestCustomMenuViewCellController: BaseTestFlexPageViewController<MenuViewCustomCellData, MenuViewCustomCell> {
     override var cellDatas: [MenuViewCustomCellData] {
