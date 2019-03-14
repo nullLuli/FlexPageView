@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "FlexPageView"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "A segment view who can switch page by slide and click"
 
   # This description is used to generate tags and improve search results.
@@ -91,7 +91,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "FlexPageView/*.swift"
+  s.source_files  = "FlexPageViewDemo/FlexPageView/*.swift"
 
   # s.public_header_files = "Classes/**/*.h"
 
