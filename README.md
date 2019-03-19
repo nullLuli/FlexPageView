@@ -20,19 +20,18 @@ pod 'FlexPageView'
 ```swift
 //1. 生成一个FlexPageView，并添加到view层级中
 var option = FlexPageViewOption()
-option.selectedColor = UIColor.red 	//option中定制UI
-let layout = MenuViewLayout() 			//可以是自己的自定义的layout
+option.selectedColor = UIColor.red //option中定制UI
+let layout = MenuViewLayout() //可以是自己的自定义的layout
 let pageView = FlexPageView(option: option, layout: layout)
 pageView.frame = view.bounds
 view.addSubview(pageView)
 
 //2. 设置FlexPageView的代理
-pageView.delegate = self						//FlexPageViewDelegate
-pageView.dataSource = self					//FlexPageViewDataSource
-pageView.uiSource = self						//FlexPageViewUISource
+pageView.delegate = self //FlexPageViewDelegate
+pageView.dataSource = self //FlexPageViewDataSource
+pageView.uiSource = self //FlexPageViewUISource
 
 //3. 实现代理方法
-
 //FlexPageViewDelegate
 func didRemovePage(_ page: UIView, at index: Int) {}
 func pageWillAppear(_ page: UIView, at index: Int) {}
