@@ -171,6 +171,8 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         
         constructPages(cacheType: .hitByIndex)
         
+        resetParallaxAnimate()
+
         if let view = pagesIndexDic[currentIndex]?.view {
             pageChangeDelegate?.pageWillAppear(view, at: currentIndex)
         }
