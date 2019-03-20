@@ -118,10 +118,12 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         if !decelerate {
             let scrollViewCurrentIndex = getScrollViewCurrentIndex(scrollView)
             scrollViewDidEndScroll(scrollView, scrollViewCurrentIndex: scrollViewCurrentIndex)
+            resetParallaxAnimate()
         }
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        resetParallaxAnimate()
         let scrollViewCurrentIndex = getScrollViewCurrentIndex(scrollView)
         if scrollViewCurrentIndex != currentIndex {
             //滑动速度非常快的时候，会出现scrollViewWillEndDragging中预测的targetContentOffset和实际停止的contentOffset不同，这里做一下处理
@@ -259,6 +261,13 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         }
     }
     
+    private func resetParallaxAnimate() {
+        for (index, pageView) in pagesIndexDic {
+            var pageView = pageView
+            pageView.parallaxPrecent = 0
+            pagesIndexDic[index] = pageView
+        }
+    }
     
     var currentPage: UIView? {
         return pagesIndexDic[currentIndex]?.view
