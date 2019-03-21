@@ -66,8 +66,8 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         return control.view
     }
     
-    func pageID(at index: Int) -> Int {
-        return index
+    func pageID(at index: Int) -> String {
+        return String(index)
     }
     
     func register() -> [String : UICollectionViewCell.Type] {

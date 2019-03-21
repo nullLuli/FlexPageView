@@ -11,7 +11,7 @@ import UIKit
 
 public protocol PageContentViewDataSource: class {
     func page(at index: Int) -> UIView
-    func pageID(at index: Int) -> Int
+    func pageID(at index: Int) -> String
 }
 public protocol PageContentViewPageChangeProtocol: class {
     func didRemovePage(_ page: UIView, at index: Int)
@@ -28,7 +28,7 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
     
     struct PageView {
         var view: UIView
-        var id: Int
+        var id: String
         var parallaxPrecent: CGFloat
     }
     
@@ -220,7 +220,7 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         return pagesIndexDic[index]
     }
     
-    private func hitCacheByContent(id: Int, cachedPageViews: [PageView]) -> PageView? {
+    private func hitCacheByContent(id: String, cachedPageViews: [PageView]) -> PageView? {
         return cachedPageViews.first { (pageView) -> Bool in
             return pageView.id == id
         }
