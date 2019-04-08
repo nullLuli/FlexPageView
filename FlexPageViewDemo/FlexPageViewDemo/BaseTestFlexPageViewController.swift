@@ -96,11 +96,11 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
     }
     
     func pageWillAppear(_ page: UIView, at index: Int) {
-        //
+        debugPrint("pageWillAppear \(index)")
     }
     
     func pageWillDisappear(_ page: UIView, at index: Int) {
-        //
+        debugPrint("pageWillDisappear \(index)")
     }
     
 }

@@ -146,6 +146,7 @@ public class FlexPageView<CellData: IMenuViewCellData>: UIView, MenuViewProtocol
     }
     
     internal func selectItemFromTapMenuView(select index: Int) {
+        guard currentIndex != index else { return } //menu view 是无状态的，没有current index属性，所以在这里判断是否需要阻拦
         contentView.selectItem(at: index)
     }
     

@@ -131,7 +131,9 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         }
     }
     
-    func scrollViewDidEndScroll(_ scrollView: UIScrollView, scrollViewCurrentIndex: Int) {
+    private func scrollViewDidEndScroll(_ scrollView: UIScrollView, scrollViewCurrentIndex: Int) {
+        guard scrollViewCurrentIndex != currentIndex else { return }
+        
         if let view = pagesIndexDic[currentIndex]?.view {
             pageChangeDelegate?.pageWillDisappear(view, at: currentIndex)
         }
@@ -146,7 +148,7 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         }
     }
     
-    func getScrollViewCurrentIndex(_ scrollView: UIScrollView) -> Int {
+    private func getScrollViewCurrentIndex(_ scrollView: UIScrollView) -> Int {
         guard let numberOfPage = numberOfPage else { return option.defaultSelectIndex }
         var scrollViewCurrentIndex = Int(scrollView.contentOffset.x / scrollView.frame.width)
         if scrollViewCurrentIndex < 0 {
