@@ -24,7 +24,7 @@ internal protocol PageContentViewUserInteractionProtocol: class {
     func updateScrollingUIFromPageContentView(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection)
 }
 
-class PageContentView: UIScrollView, UIScrollViewDelegate {
+public class PageContentView: UIScrollView, UIScrollViewDelegate {
     
     struct PageView {
         var view: UIView
@@ -81,7 +81,7 @@ class PageContentView: UIScrollView, UIScrollViewDelegate {
         
     }
     
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         
         contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)

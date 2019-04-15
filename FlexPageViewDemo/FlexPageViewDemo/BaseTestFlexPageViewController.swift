@@ -138,3 +138,10 @@ extension UICollectionViewCell {
         return String(describing: self)
     }
 }
+
+extension PageContentView {
+    override public func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let touchV = super.hitTest(point, with: event)
+        return touchV
+    }
+}
