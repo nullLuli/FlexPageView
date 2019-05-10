@@ -14,6 +14,7 @@ public protocol MenuViewLayoutProtocol: class {
 
 internal protocol MenuViewProtocol: class {
     func selectItemFromTapMenuView(select index: Int)
+    func extraViewAction()
 }
 
 public protocol MenuViewUISource: class {
@@ -50,6 +51,9 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
+    private var extraView: UIButton = UIButton()
+    private var extralMaskView: UIImageView = UIImageView()
+
     private var underlineView: UIView = UIView()
     
     private var underlineY: CGFloat {
@@ -78,6 +82,15 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
             underlineView.frame.size = CGSize(width: option.underlineWidth, height: option.underlineHeight)
         }
         
+        if option.showExtraView {
+            addSubview(extralMaskView)
+            addSubview(extraView)
+            
+            extralMaskView.image = UIImage(named: option.extraMaskImageName)
+            extraView.setImage(UIImage(named: option.extraImageName), for: .normal)
+            extraView.addTarget(self, action: #selector(self.extraViewAction), for: .touchUpInside)
+        }
+
         self.dataSource = self
         self.delegate = self
         
@@ -244,10 +257,25 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
+    // MARK: 右边的按钮点击
+    internal func extraViewAction() {
+        menuViewDelegate?.extraViewAction()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         
         underlineView.frame.origin.y = underlineY
+        
+        if option.showExtraView {
+            extralMaskView.frame.size = option.extraMaskImageSize
+            extralMaskView.frame.origin.x = bounds.width - extralMaskView.frame.width
+            extralMaskView.frame.origin.y = (bounds.height - extralMaskView.frame.height) / 2
+            
+            extraView.frame.size = option.extraImageSize
+            extraView.frame.origin.x = bounds.width - extraView.frame.width
+            extraView.frame.origin.y = (bounds.height - extraView.frame.height) / 2
+        }
     }
 }
 

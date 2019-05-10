@@ -21,7 +21,8 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         return []
     }
     
-    let titles: [String] = ["标题", "长长的标题", "短", "长长长长的标题", "无法证明", "一场朋友", "大约离别时", "倾城", "太傻", "美静", "孤独不苦", "喜欢"]
+    let titles: [String] = ["标题", "长长的标题", "短"]
+    // "长长长长的标题", "无法证明", "一场朋友", "大约离别时", "倾城", "太傻", "美静", "孤独不苦", "喜欢"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,17 +36,19 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         option.underlineColor = UIColor(rgb: 0x4285F4)
         option.selectedColor = UIColor(rgb: 0x262626)
         option.titleColor = UIColor(rgb: 0x999CA0)
-        option.extraImageName = "ic_nav_menu"
-        option.extraImageSize = CGSize(width: 50, height: 40)
-        option.extraMaskImageName = "Rectangle"
-        option.extraMaskImageSize = CGSize(width: 50, height: 40)
+//        option.extraImageName = "ic_nav_menu"
+//        option.extraImageSize = CGSize(width: 50, height: 40)
+//        option.extraMaskImageName = "Rectangle"
+//        option.extraMaskImageSize = CGSize(width: 50, height: 40)
 
         let pageView = FlexPageView<CellData>(option: option, layout: layout)
         pageView.delegate = self
         pageView.dataSource = self
         pageView.uiSource = self
-        view.addSubview(pageView)
-        pageView.frame = view.bounds
+        pageView.addMenuViewTo(view: view)
+        pageView.addContentViewTo(view: view)
+        pageView.setMenuViewFrame(CGRect(x: 50, y: 0, width: view.frame.width - 50, height: option.menuViewHeight))
+        pageView.setContentViewFrame(CGRect(x: 0, y: option.menuViewHeight + 50, width: view.frame.width, height: view.frame.height))
         self.pageView = pageView
     }
     
