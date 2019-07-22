@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/nullLuli/FlexPageView/blob/master/1552911813695.gif" width="30%" height="30%" alt="Screenshot Preview" />
+    <img src="https://raw.githubusercontent.com/nullLuli/FlexPageView/master/1552911813695.gif" width="30%" height="30%" alt="Screenshot Preview" />
 </p>
 
 
