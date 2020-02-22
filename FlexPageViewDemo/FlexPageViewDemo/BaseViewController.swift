@@ -1,5 +1,5 @@
 //
-//  BaseTestFlexPageViewController.swift
+//  BaseViewController.swift
 //  FlexPageView
 //
 //  Created by nullLuli on 2019/3/12.
@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import FlexPageView
 
-class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollectionViewCell>: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
+class BaseViewController<CellData: IMenuViewCellData, Cell: UICollectionViewCell>: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
     var pageView: FlexPageView?
     
     var layout: MenuViewBaseLayout {

@@ -1,5 +1,5 @@
 //
-//  TestCustomMenuViewCellController.swift
+//  CustomMenuUIController.swift
 //  FlexPageView
 //
 //  Created by nullLuli on 2019/3/11.
@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import FlexPageView
 
-class TestCustomMenuViewCellController: BaseTestFlexPageViewController<MenuViewCustomCellData, MenuViewCustomCell> {
+class CustomMenuUIController: BaseViewController<MenuViewCustomCellData, MenuViewCustomCell> {
     override var cellDatas: [MenuViewCustomCellData] {
         var titleDatas: [MenuViewCustomCellData] = []
         titles.enumerated().forEach { (offset, element) in

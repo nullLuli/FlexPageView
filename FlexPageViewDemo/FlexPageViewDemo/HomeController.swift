@@ -39,10 +39,10 @@ class HomeController: UIViewController, UITableViewDataSource, UITableViewDelega
         
         switch indexPath.row {
         case 0:
-            let control = TestFlexPageViewController()
+            let control = DefualtUIController()
             navigationController?.pushViewController(control, animated: true)
         case 1:
-            let control = TestCustomMenuViewCellController()
+            let control = CustomMenuUIController()
             navigationController?.pushViewController(control, animated: true)
         default:
             ()

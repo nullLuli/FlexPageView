@@ -1,5 +1,5 @@
 //
-//  TestSelfDefineCollectionView.swift
+//  DefualtUIController.swift
 //  swiftLearn
 //
 //  Created by nullLuli on 2018/11/1.
@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import FlexPageView
 
-class TestFlexPageViewController: BaseTestFlexPageViewController<MenuViewCellData, MenuViewCell> {
+class DefualtUIController: BaseViewController<MenuViewCellData, MenuViewCell> {
     override var cellDatas: [MenuViewCellData] {
         var titleDatas: [MenuViewCellData] = []
         for title in titles {
