@@ -36,7 +36,9 @@ pod 'FlexPageView'
 
 FlexMenuView是UICollectionView的子类，以便提供定制化菜单栏UI的需求。
 
-![通过data获取cell](/Users/pxcm-0101-01-0045/Desktop/博客/通过data获取cell.png)
+<p align="center">
+    <img src="https://github.com/nullLuli/FlexPageView/blob/master/%E9%80%9A%E8%BF%87data%E8%8E%B7%E5%8F%96cell.png" width="30%" height="30%" alt="通过data获取cell" />
+</p>
 
 通过实现IMenuViewCell和IMenuViewCellData协议，在FlexPageViewUISource的register方法中注册cell，来实现定制菜单的UI。
 
