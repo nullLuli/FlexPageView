@@ -26,10 +26,18 @@ internal protocol PageContentViewUserInteractionProtocol: class {
 
 public class PageContentView: UIScrollView, UIScrollViewDelegate {
     
-    struct PageView {
+    class PageView {
         var view: UIView
         var id: String
         var parallaxPrecent: CGFloat
+        var reused: Bool
+        
+        required init(view: UIView, id: String, parallaxPrecent: CGFloat, reused: Bool = false) {
+            self.view = view
+            self.id = id
+            self.parallaxPrecent = parallaxPrecent
+            self.reused = reused
+        }
     }
     
     weak var pageChangeDelegate: PageContentViewPageChangeProtocol?
@@ -44,8 +52,8 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
     
     var option: FlexPageViewOption
     
+    /// There are two cache hit modes. One is to use pageDics to compare the index to determine whether to hit the cache when the data source has not changed, and the other is to use the comparison method provided by the outside world to change the data source. Decide whether to hit
     enum PageContentViewCacheType {
-        //有两种缓存命中模式，一种是在数据源没有变化的情况下，使用pageDics进行对比index来决定是否命中缓存，另一种是在数据源有变化的情况下，使用外界提供的对比方法来决定是否命中
         case hitByIndex
         case hitByContent
     }
@@ -65,20 +73,11 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func reloadData(numberOfPage: Int) {
+    func reloadData(numberOfPage: Int, selectIndex: Int) {
         self.numberOfPage = numberOfPage
         contentSize = CGSize(width: CGFloat(numberOfPage) * frame.width, height: 0)
         
-        if let view = pagesIndexDic[currentIndex]?.view {
-            pageChangeDelegate?.pageWillDisappear(view, at: currentIndex)
-        }
-        
-        constructPages(cacheType: .hitByContent)
-        
-        if let view = pagesIndexDic[currentIndex]?.view {
-            pageChangeDelegate?.pageWillAppear(view, at: currentIndex)
-        }
-        
+        selectItem(at: selectIndex, cacheType: .hitByContent)
     }
     
     override public func layoutSubviews() {
@@ -87,10 +86,11 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         contentSize = CGSize(width: CGFloat(numberOfPage ?? 0) * frame.width, height: 0)
         layoutPageViews()
     }
+
     
     // MARK: 滑动处理
     var lastOffsetX: CGFloat = 0
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView.frame.width > 0 else { return }
         //判断现在的滑动位置：left index， precent
         let scrollViewCurrentLeftIndex = Int(floor(scrollView.contentOffset.x / scrollView.frame.width))
@@ -109,12 +109,12 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
     }
     
     var scrollFinalOffset: CGPoint = CGPoint.zero
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         scrollFinalOffset = targetContentOffset.pointee
     }
     
     // 在scrollViewDidEndDragging中使用constructPages、pageWillAppear会因为controller的init和网络数据解析影响界面流畅度
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             let scrollViewCurrentIndex = getScrollViewCurrentIndex(scrollView)
             scrollViewDidEndScroll(scrollView, scrollViewCurrentIndex: scrollViewCurrentIndex)
@@ -122,7 +122,7 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         }
     }
     
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         resetParallaxAnimate()
         let scrollViewCurrentIndex = getScrollViewCurrentIndex(scrollView)
         if scrollViewCurrentIndex != currentIndex {
@@ -143,6 +143,10 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         constructPages(cacheType: .hitByIndex)
         userInteractionDelegate?.selectItemFromPageContentView(select: currentIndex)
         
+        if let currentPage = pagesIndexDic[currentIndex]?.view {
+            bringSubviewToFront(currentPage) //将当前页面置于最上方，为了实现Parallax效果
+        }
+        
         if let view = pagesIndexDic[currentIndex]?.view {
             pageChangeDelegate?.pageWillAppear(view, at: currentIndex)
         }
@@ -161,7 +165,7 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
     }
     
     // MARK: 选中处理
-    func selectItem(at index: Int) {
+    func selectItem(at index: Int, cacheType: PageContentViewCacheType = .hitByIndex) {
         if let view = pagesIndexDic[currentIndex]?.view {
             pageChangeDelegate?.pageWillDisappear(view, at: currentIndex)
         }
@@ -171,7 +175,11 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         let offsetX = CGFloat(currentIndex) * frame.width
         contentOffset = CGPoint(x: offsetX, y: contentOffset.y)
         
-        constructPages(cacheType: .hitByIndex)
+        constructPages(cacheType: cacheType)
+        
+        if let currentPage = pagesIndexDic[currentIndex]?.view {
+            bringSubviewToFront(currentPage) //将当前页面置于最上方，为了实现Parallax效果
+        }
         
         resetParallaxAnimate()
 
@@ -182,56 +190,86 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
     
     // MARK: 根据index组织显示页
     private func constructPages(cacheType: PageContentViewCacheType) {
+        resetReuseState()
+        let cachedPageDic = pagesIndexDic
+        pagesIndexDic.removeAll()
+        
+        //proload
         let beginIndex = max(currentIndex - option.preloadRange, 0)
         let endIndex = min(currentIndex + option.preloadRange, (numberOfPage ?? 1) - 1)
-        
-        let cachePages = Array(pagesIndexDic.values)
         if endIndex >= beginIndex {
             for index in beginIndex...endIndex {
                 if let id = dataSource?.pageID(at: index) {
                     var pageView: PageView?
                     switch cacheType {
                     case .hitByIndex:
-                        pageView = hitCacheByIndex(index: index)
+                        pageView = hitCacheByIndex(index: index, cachedPageDic: cachedPageDic)
                     case .hitByContent:
-                        pageView = hitCacheByContent(id: id, cachedPageViews: cachePages)
+                        pageView = hitCacheByContent(id: id, cachedPageViews: Array(cachedPageDic.values))
                     }
                     
-                    if pageView == nil {
+                    if let pageView = pageView {
+                        pageView.reused = true
+                        pagesIndexDic[index] = pageView
+                    } else {
                         if let view = dataSource?.page(at: index) {
-                            pageView = PageView(view: view, id: id, parallaxPrecent: 0)
+                            let pageView = PageView(view: view, id: id, parallaxPrecent: 0, reused: true)
                             pagesIndexDic[index] = pageView
+                            addSubview(pageView.view)
                         }
-                    }
-                    
-                    if let pageView = pageView?.view {
-                        addSubview(pageView)
                     }
                 }
             }
         }
-        
+        //cache
         let cacheBeginIndex = max(currentIndex - option.cacheRange, 0)
         let cacheEndIndex = min(currentIndex + option.cacheRange, (numberOfPage ?? 1) - 1)
-        clearPageBeyondCache(cacheBegin: cacheBeginIndex, cacheEnd: cacheEndIndex)
+        if cacheEndIndex >= cacheBeginIndex {
+            for index in cacheBeginIndex...cacheEndIndex {
+                if let _ = pagesIndexDic[index] {
+                    continue
+                }
+                var pageView: PageView?
+                switch cacheType {
+                case .hitByIndex:
+                    pageView = hitCacheByIndex(index: index, cachedPageDic: cachedPageDic)
+                case .hitByContent:
+                    if let id = dataSource?.pageID(at: index) {
+                        pageView = hitCacheByContent(id: id, cachedPageViews: Array(cachedPageDic.values))
+                    }
+                }
+                
+                if let pageView = pageView {
+                    pageView.reused = true
+                    pagesIndexDic[index] = pageView
+                }
+            }
+        }
+        
+        clearUnusePage(cachedPageDic: cachedPageDic)
         
         layoutPageViews()
     }
     
-    private func hitCacheByIndex(index: Int) -> PageView? {
-        return pagesIndexDic[index]
+    private func hitCacheByIndex(index: Int, cachedPageDic: [Int: PageView]) -> PageView? {
+        return cachedPageDic[index]
     }
     
     private func hitCacheByContent(id: String, cachedPageViews: [PageView]) -> PageView? {
         return cachedPageViews.first { (pageView) -> Bool in
-            return pageView.id == id
+            return pageView.id == id && !pageView.reused
         }
     }
     
-    private func clearPageBeyondCache(cacheBegin bIndex: Int, cacheEnd eIndex: Int) {
-        for (index, pageView) in pagesIndexDic {
-            if index < bIndex || index > eIndex {
-                pagesIndexDic[index] = nil
+    private func resetReuseState() {
+        for item in pagesIndexDic.values {
+            item.reused = false
+        }
+    }
+    
+    private func clearUnusePage(cachedPageDic: [Int: PageView]) {
+        for (index, pageView) in cachedPageDic {
+            if !pageView.reused {
                 pageView.view.removeFromSuperview()
                 pageChangeDelegate?.didRemovePage(pageView.view, at: index)
             }
@@ -252,24 +290,16 @@ public class PageContentView: UIScrollView, UIScrollViewDelegate {
         case .left:
             //右边的view有视差效果 parallax: -0.5 - 0 precent: 0 - 1
             let rightIndex = leftIndex + 1
-            if var page = pagesIndexDic[rightIndex] {
-                page.parallaxPrecent = (precent - 1) * option.parallaxPrecent
-                pagesIndexDic[rightIndex] = page
-            }
+            pagesIndexDic[rightIndex]?.parallaxPrecent = (precent - 1) * option.parallaxPrecent
         case .right:
             //左边的view有视差效果 parallax: 0.5 - 0 precent: 1 - 0
-            if var page = pagesIndexDic[leftIndex] {
-                page.parallaxPrecent =  precent * option.parallaxPrecent
-                pagesIndexDic[leftIndex] = page
-            }
+            pagesIndexDic[leftIndex]?.parallaxPrecent =  precent * option.parallaxPrecent
         }
     }
     
     private func resetParallaxAnimate() {
-        for (index, pageView) in pagesIndexDic {
-            var pageView = pageView
-            pageView.parallaxPrecent = 0
-            pagesIndexDic[index] = pageView
+        for item in pagesIndexDic.values {
+            item.parallaxPrecent = 0
         }
     }
     

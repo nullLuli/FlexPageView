@@ -11,7 +11,7 @@ import UIKit
 import FlexPageView
 
 class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollectionViewCell>: UIViewController, FlexPageViewDataSource, FlexPageViewUISource, FlexPageViewDelegate {
-    var pageView: FlexPageView<CellData>?
+    var pageView: FlexPageView?
     
     var layout: MenuViewBaseLayout {
         return MenuViewBaseLayout()
@@ -21,35 +21,46 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         return []
     }
     
-    let titles: [String] = ["标题", "长长的标题", "短"]
-    // "长长长长的标题", "无法证明", "一场朋友", "大约离别时", "倾城", "太傻", "美静", "孤独不苦", "喜欢"
+    let titles: [String] = ["关注", "推荐", "热榜", "一个长的标签", "短", "汽车", "5G", "科技", "生活"]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         edgesForExtendedLayout = UIRectEdge.right
+        setupFlexPageView()
+    }
+    
+    private func setupFlexPageView() {
         var option = FlexPageViewOption()
-        option.titleMargin = 70
+        option.titleMargin = 30
         option.allowSelectedEnlarge = true
         option.selectedScale = 1.3
         option.preloadRange = 1
         option.underlineColor = UIColor(rgb: 0x4285F4)
         option.selectedColor = UIColor(rgb: 0x262626)
         option.titleColor = UIColor(rgb: 0x999CA0)
-//        option.extraImageName = "ic_nav_menu"
-//        option.extraImageSize = CGSize(width: 50, height: 40)
-//        option.extraMaskImageName = "Rectangle"
-//        option.extraMaskImageSize = CGSize(width: 50, height: 40)
+        option.extraImage = UIImage(named: "ic_nav_menu")
+        option.extraImageSize = CGSize(width: 50, height: 40)
+        option.extraMaskImage = UIImage(named: "Rectangle")
+        option.extraMaskImageSize = CGSize(width: 50, height: 40)
 
-        let pageView = FlexPageView<CellData>(option: option, layout: layout)
-        pageView.delegate = self
-        pageView.dataSource = self
-        pageView.uiSource = self
-        pageView.addMenuViewTo(view: view)
-        pageView.addContentViewTo(view: view)
-        pageView.setMenuViewFrame(CGRect(x: 50, y: 0, width: view.frame.width - 50, height: option.menuViewHeight))
-        pageView.setContentViewFrame(CGRect(x: 0, y: option.menuViewHeight + 50, width: view.frame.width, height: view.frame.height))
-        self.pageView = pageView
+        if let pageView = FlexPageView(option: option, layout: getLayout(option: option)) {
+            pageView.delegate = self
+            pageView.dataSource = self
+            pageView.uiSource = self
+            self.pageView = pageView
+            view.addSubview(pageView)
+        }
+    }
+    
+    func getLayout(option: FlexPageViewOption) -> MenuViewBaseLayout {
+        return MenuViewBaseLayout()
+    }
+    
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        
+        pageView?.frame = view.bounds
     }
     
     // MARK: FlexPageView
@@ -64,8 +75,8 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
     func page(at index: Int) -> UIView {
         let control = ContentController()
         control.title = titles[index]
-        addChildViewController(control)
-        control.didMove(toParentViewController: self)
+        addChild(control)
+        control.didMove(toParent: self)
         return control.view
     }
     
@@ -90,10 +101,13 @@ class BaseTestFlexPageViewController<CellData: IMenuViewCellData, Cell: UICollec
         }
     }
     
+    func selectItemFromTapMenuView(select index: Int) {
+    }
+
     func didRemovePage(_ page: UIView, at index: Int) {
-        for control in childViewControllers {
+        for control in children {
             if control.view == page {
-                control.removeFromParentViewController()
+                control.removeFromParent()
             }
         }
     }
@@ -133,18 +147,5 @@ extension UIColor {
             green: (rgb >> 8) & 0xFF,
             blue: rgb & 0xFF
         )
-    }
-}
-
-extension UICollectionViewCell {
-    static var identifier: String {
-        return String(describing: self)
-    }
-}
-
-extension PageContentView {
-    override public func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let touchV = super.hitTest(point, with: event)
-        return touchV
     }
 }

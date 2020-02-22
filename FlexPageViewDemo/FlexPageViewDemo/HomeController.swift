@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 class HomeController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    let tableView: UITableView = UITableView(frame: CGRect.zero, style: UITableViewStyle.plain)
+    let tableView: UITableView = UITableView(frame: CGRect.zero, style: UITableView.Style.plain)
     let datas: [String] = ["测试FlexPageView", "测试自定义MenuViewCell"]
     
     override func viewDidLoad() {

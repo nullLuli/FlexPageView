@@ -19,7 +19,7 @@ class TestFlexPageViewController: BaseTestFlexPageViewController<MenuViewCellDat
         return titleDatas
     }
     
-    override var layout: MenuViewBaseLayout {
+    override func getLayout(option: FlexPageViewOption) -> MenuViewBaseLayout {
         return MenuViewLayout()
     }
 }

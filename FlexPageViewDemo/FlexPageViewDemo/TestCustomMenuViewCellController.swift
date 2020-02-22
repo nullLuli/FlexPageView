@@ -13,13 +13,13 @@ import FlexPageView
 class TestCustomMenuViewCellController: BaseTestFlexPageViewController<MenuViewCustomCellData, MenuViewCustomCell> {
     override var cellDatas: [MenuViewCustomCellData] {
         var titleDatas: [MenuViewCustomCellData] = []
-        for title in titles {
-            titleDatas.append(MenuViewCustomCellData(text: title, isHot: true))
+        titles.enumerated().forEach { (offset, element) in
+            titleDatas.append(MenuViewCustomCellData(text: element, isHot: element == "热榜"))
         }
         return titleDatas
     }
     
-    override var layout: MenuViewBaseLayout {
-        return MenuViewCustomLayout()
+    override func getLayout(option: FlexPageViewOption) -> MenuViewBaseLayout {
+        return MenuViewCustomLayout(option: option)
     }
 }

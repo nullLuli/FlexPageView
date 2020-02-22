@@ -11,6 +11,8 @@ import UIKit
 import FlexPageView
 
 struct MenuViewCustomCellData: IMenuViewCellData {
+    var isSelected: Bool = false
+    
     var text: String
     var isHot: Bool
     
@@ -33,7 +35,7 @@ class MenuViewCustomLayout: MenuViewBaseLayout {
     
     var contentMaxX: CGFloat = 0
     
-    init(option: FlexPageViewOption = FlexPageViewOption()) {
+    init(option: FlexPageViewOption) {
         self.option = option
         
         super.init()
@@ -51,11 +53,16 @@ class MenuViewCustomLayout: MenuViewBaseLayout {
         
         for item in 0 ..< collectionView.numberOfItems(inSection: 0) {
             let indexPath = IndexPath(item: item, section: 0)
-            let title = (delegate?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCustomCellData)?.text
-            let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
+            let data = dataSource?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCustomCellData
+            let title = data?.text
+            let isHot = data?.isHot ?? false
+            let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
             let labelWidth = titleWidth + option.titleMargin
-            let contentWidth = labelWidth + HotImageViewWidth + HotImageMargin
-            let frame = CGRect(x: contentMaxX, y: 0, width: contentWidth, height: collectionView.frame.height)
+            var contentWidth = labelWidth
+            if isHot {
+                contentWidth += (HotImageViewWidth + HotImageMargin)
+            }
+            let frame = CGRect(x: contentMaxX, y: 0, width: ceil(contentWidth), height: collectionView.frame.height)
             contentMaxX += contentWidth
 
             let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
@@ -86,6 +93,10 @@ class MenuViewCustomLayout: MenuViewBaseLayout {
 }
 
 class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
+    var underlineCenterX: CGFloat {
+        return titleLable.center.x
+    }
+    
     var option: FlexPageViewOption = FlexPageViewOption()
     
     var titleLable: UILabel = {
@@ -115,8 +126,13 @@ class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
         super.layoutSubviews()
         
         titleLable.sizeToFit()
-        titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
-        hotImageView.frame = CGRect(x: titleLable.frame.maxX + HotImageMargin, y: 0, width: HotImageViewWidth, height: HotImageViewWidth)
+        if hotImageView.isHidden {
+            titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
+        } else {
+            titleLable.frame.origin.x = option.titleMargin / 2
+            titleLable.center.y = bounds.midY
+            hotImageView.frame = CGRect(x: titleLable.frame.maxX + HotImageMargin, y: 0, width: HotImageViewWidth, height: HotImageViewWidth)
+        }
     }
     
     // MARK: 更新数据
@@ -132,6 +148,7 @@ class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
             titleLable.font = UIFont.systemFont(ofSize: option.titleFont)
         }
         hotImageView.isHidden = !data.isHot
+        setNeedsLayout()
     }
     
     // MARK: 更新滑动UI
@@ -141,25 +158,7 @@ class MenuViewCustomCell: UICollectionViewCell, IMenuViewCell {
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
         }
         
-        titleLable.textColor = updateColor(option.selectedColor, toColor: option.titleColor, percent: precent)
-    }
-    
-    private func updateColor(_ fromColor: UIColor, toColor: UIColor, percent: CGFloat) -> UIColor {
-        var fromR: CGFloat = 0
-        var fromG: CGFloat = 0
-        var fromB: CGFloat = 0
-        var fromA: CGFloat = 0
-        fromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
-        var toR: CGFloat = 0
-        var toG: CGFloat = 0
-        var toB: CGFloat = 0
-        var toA: CGFloat = 0
-        toColor.getRed(&toR, green: &toG, blue: &toB, alpha: &toA)
-        let currentR: CGFloat = fromR + percent * (toR - fromR)
-        let currentG: CGFloat = fromG + percent * (toG - fromG)
-        let currentB: CGFloat = fromB + percent * (toB - fromB)
-        let currentA: CGFloat = fromA + percent * (toA - fromA)
-        return UIColor(red: currentR, green: currentG, blue: currentB, alpha: currentA)
+        titleLable.textColor = UIColor.transition(fromColor: option.selectedColor, toColor: option.titleColor, percent: precent)
     }
     
     // MARK: 更新选中状态UI

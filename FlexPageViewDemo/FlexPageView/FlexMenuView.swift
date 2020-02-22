@@ -8,41 +8,22 @@
 
 import UIKit
 
-public protocol MenuViewLayoutProtocol: class {
-    func collectionView(_ collectionView: UICollectionView, dataForItemAtIndexPath indexPath: IndexPath) -> Any
-}
-
-internal protocol MenuViewProtocol: class {
+public protocol MenuViewDelegate: class {
     func selectItemFromTapMenuView(select index: Int)
-    func extraViewAction()
 }
 
+/// return the cell type and corresponding identifier that FlexMenuView needs to registered
 public protocol MenuViewUISource: class {
     func register() -> [String: UICollectionViewCell.Type]
 }
 
-public protocol IMenuViewCell {
-    func updateScrollingUI(with precent: CGFloat)
-    func updateSelectUI()
-    func setData(data: IMenuViewCellData, option: FlexPageViewOption)
-}
-
-public protocol IMenuViewCellData {
-    var CellClass: UICollectionViewCell.Type { get }
-    var identifier: String { get }
-}
-
-open class MenuViewBaseLayout: UICollectionViewLayout {
-    public weak var delegate: MenuViewLayoutProtocol?
-}
-
-class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionViewDelegate, UICollectionViewDataSource, MenuViewLayoutProtocol {
+class FlexMenuView: UICollectionView, UICollectionViewDelegate, UICollectionViewDataSource, MenuViewLayoutDataSource {
     
-    fileprivate var datas: [CellData] = []
+    fileprivate var datas: [IMenuViewCellData] = []
     
     internal var option: FlexPageViewOption
     
-    internal weak var menuViewDelegate: MenuViewProtocol?
+    internal weak var menuViewDelegate: MenuViewDelegate?
     internal weak var menuViewUISource: MenuViewUISource? {
         didSet {
             if let uiSource = menuViewUISource {
@@ -51,15 +32,13 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
-    private var extraView: UIButton = UIButton()
-    private var extralMaskView: UIImageView = UIImageView()
-
     private var underlineView: UIView = UIView()
     
     private var underlineY: CGFloat {
         return bounds.height - option.underlineHeight - 5
     }
     
+    /// FlexMenuView inherits from UICollectionView and uses subclasses of MenuViewBaseLayout to layout cells
     internal init(frame: CGRect, option: FlexPageViewOption = FlexPageViewOption(), layout: MenuViewBaseLayout? = nil) {
         self.option = option
         
@@ -74,27 +53,19 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         
         super.init(frame: frame, collectionViewLayout: layoutR)
         
-        layoutR.delegate = self
+        layoutR.dataSource = self
         
         if option.showUnderline {
             addSubview(underlineView)
             underlineView.backgroundColor = option.underlineColor
+            underlineView.layer.cornerRadius = 0.5
+            underlineView.layer.masksToBounds = true
             underlineView.frame.size = CGSize(width: option.underlineWidth, height: option.underlineHeight)
         }
         
-        if option.showExtraView {
-            addSubview(extralMaskView)
-            addSubview(extraView)
-            
-            extralMaskView.image = UIImage(named: option.extraMaskImageName)
-            extraView.setImage(UIImage(named: option.extraImageName), for: .normal)
-            extraView.addTarget(self, action: #selector(self.extraViewAction), for: .touchUpInside)
-        }
-
         self.dataSource = self
         self.delegate = self
-        
-        backgroundColor = UIColor.white
+        backgroundColor = option.menuBackgroundColor
         showsHorizontalScrollIndicator = false
     }
     
@@ -108,24 +79,23 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
-    internal func reloadTitles(_ datas: [CellData], index: Int? = nil) {
+    internal func reloadTitles(_ datas: [IMenuViewCellData], index: Int? = nil) {
         self.datas = datas
-        self.reloadData()
-        
-        if indexPathsForSelectedItems?.first == nil {
-            let selectIndex: Int = index ?? option.defaultSelectIndex
-            selectItem(at: selectIndex)
-            if option.showUnderline {
-                /*
-                 reloadData 后调用 collectionView 的 selectItem 不会触发 didSelectItemAt 方法
-                 所以在这里更新下滑条
-                 */
-                updateSelectUnderlineView(to: selectIndex)
+        UIView.animate(withDuration: 0, animations: {
+            self.reloadData()
+            self.layoutIfNeeded()
+        }) { (_) in
+            let selectedDatas = self.datas.filter({ (item) -> Bool in
+                return item.isSelected
+            })
+            if selectedDatas.isEmpty {
+                let selectIndex: Int = index ?? self.option.defaultSelectIndex
+                self.selectItem(at: selectIndex)
             }
         }
     }
     
-    // MARK: 根据滑动比例更新UI
+    // MARK: Update UI when scrolling
     public func updateScrollingUI(leftIndex: Int, precent: CGFloat, direction: FlexPageDirection) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard leftIndex < numberOfItem, leftIndex >= -1 else { return }
@@ -155,9 +125,11 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
             let indexPath = IndexPath(item: leftIndex, section: 0)
             let rightIndexPath = IndexPath(item: rightIndex, section: 0)
             
-            if let leftView = cellForItem(at: indexPath), let rightView = cellForItem(at: rightIndexPath) {
-                let leftX: CGFloat = ceil(leftView.center.x - option.underlineWidth / 2)
-                let rightX: CGFloat = ceil(rightView.center.x - option.underlineWidth / 2)
+            if let leftView = cellForItem(at: indexPath) as? IMenuViewCell & UIView, let rightView = cellForItem(at: rightIndexPath) as? IMenuViewCell & UIView {
+                let leftCenterX = leftView.convert(CGPoint(x: leftView.underlineCenterX, y: 0), to: self).x
+                let rightCenterX = rightView.convert(CGPoint(x: rightView.underlineCenterX, y: 0), to: self).x
+                let leftX: CGFloat = ceil(leftCenterX - option.underlineWidth / 2)
+                let rightX: CGFloat = ceil(rightCenterX - option.underlineWidth / 2)
                 if option.showUnderline {
                     let detalWidth = rightX - leftX
                     if direction == .left {
@@ -180,31 +152,20 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
         }
     }
     
-    // MARK: 根据选中位置更新UI
+    // MARK: Update UI when selected
     internal func selectItem(at index: Int) {
-        guard index < datas.count else { return }
-        
-        let lastSelectIndexPath = indexPathsForSelectedItems?.first
-        let indexPath = IndexPath(item: index, section: 0)
-        selectItem(at: indexPath, animated: true, scrollPosition: .centeredHorizontally)
-        updateSelectUnderlineView(to: index)
-        
-        let cell = cellForItem(at: indexPath)
-        (cell as? IMenuViewCell)?.updateSelectUI()
-        if let lastSelectIndexPath = lastSelectIndexPath {
-            let cell = cellForItem(at: lastSelectIndexPath)
-            (cell as? IMenuViewCell)?.updateSelectUI()
-        }
+        _selectItem(at: index)
     }
     
     private func updateSelectUnderlineView(to index: Int) {
         let numberOfItem = numberOfItems(inSection: 0)
         guard index < numberOfItem else { return }
         let indexPath = IndexPath(item: index, section: 0)
-        let selectCellLayout = collectionViewLayout.layoutAttributesForItem(at: indexPath)
-        let midX = selectCellLayout?.frame.midX ?? 0
-        let x = midX - (option.underlineWidth / 2)
-        underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
+        if let selectedView = cellForItem(at: indexPath) as? IMenuViewCell & UIView {
+            let centerX = selectedView.convert(CGPoint(x: selectedView.underlineCenterX, y: 0), to: self).x
+            let x = centerX - (option.underlineWidth / 2)
+            underlineView.frame = CGRect(x: x, y: underlineY, width: option.underlineWidth, height: option.underlineHeight)
+        }
     }
     
     // MARK: UICollectionView
@@ -219,63 +180,74 @@ class FlexMenuView<CellData: IMenuViewCellData>: UICollectionView, UICollectionV
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard indexPath.item < datas.count else { return UICollectionViewCell() }
         let data = datas[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: data.identifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: data.CellClass.identifier, for: indexPath)
         (cell as? IMenuViewCell)?.setData(data: data, option: option)
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         /*
-         1. cell在屏幕外时无法通过 cellForItem 取到cell，所以无法更新cell的UI状态
-         2. reloadData调用后 collectionView 的 selectItem 不会触发 didSelectItemAt 方法 + reloadData调用后无法通过 cellForItem 取到cell
-         在 willDisplay 中调整 cell 的选中状态
+         When the cell is out of the screen, the cell cannot be obtained through the cellForItem and the UI state of the cell cannot be updated. So adjust the selected state of cell in willDisplay
          */
         if let cell = cell as? IMenuViewCell {
             cell.updateSelectUI()
         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, dataForItemAtIndexPath indexPath: IndexPath) -> Any {
+    func collectionView(_ collectionView: UICollectionView, dataForItemAtIndexPath indexPath: IndexPath) -> IMenuViewCellData {
         return datas[indexPath.item]
     }
     
-    // MARK: 用户选中处理
+    // MARK: Selected processe
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         menuViewDelegate?.selectItemFromTapMenuView(select: indexPath.item)
         
-        if let cell = cellForItem(at: indexPath) as? IMenuViewCell {
-            cell.updateSelectUI()
-        }
-        updateSelectUnderlineView(to: indexPath.item)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        _selectItem(at: indexPath.item)
     }
     
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+    private func _selectItem(at index: Int) {
+        guard index < datas.count else { return }
         
-        if let cell = cellForItem(at: indexPath) as? IMenuViewCell {
-            cell.updateSelectUI()
+        datas.enumerated().forEach { (offset, element) in
+            if element.isSelected {
+                let indexPath = IndexPath(item: offset, section: 0)
+                let cell = cellForItem(at: indexPath)
+                cell?.isSelected = false
+                (cell as? IMenuViewCell)?.updateSelectUI()
+                selectData(index: offset, to: false)
+            }
+        }
+        let indexPath = IndexPath(item: index, section: 0)
+        scrollItemToHorizonCenter(indexPath) {
+            self.updateSelectUnderlineView(to: index)
+            
+            let cell = self.cellForItem(at: indexPath)
+            cell?.isSelected = true
+            (cell as? IMenuViewCell)?.updateSelectUI()
+            self.selectData(index: indexPath.item, to: true)
+        }
+    }
+        
+    private func selectData(index: Int, to selected: Bool) {
+        var data = datas[index]
+        data.isSelected = selected
+        datas[index] = data
+    }
+    
+    private func scrollItemToHorizonCenter(_ indexPath: IndexPath, complete: (() -> Void)? = nil ) {
+        UIView.animate(withDuration: 0.25, animations: {
+            let selectCellLayout = self.collectionViewLayout.layoutAttributesForItem(at: indexPath)
+            let offset = min(max(self.contentSize.width - self.frame.width, 0), max((selectCellLayout?.frame.midX ?? 0) - self.frame.width / 2, 0))
+            self.setContentOffset(CGPoint(x: offset, y: self.contentOffset.y), animated: false)
+        }) { (_) in
+            complete?()
         }
     }
     
-    // MARK: 右边的按钮点击
-    internal func extraViewAction() {
-        menuViewDelegate?.extraViewAction()
-    }
-
     override func layoutSubviews() {
         super.layoutSubviews()
         
         underlineView.frame.origin.y = underlineY
-        
-        if option.showExtraView {
-            extralMaskView.frame.size = option.extraMaskImageSize
-            extralMaskView.frame.origin.x = bounds.width - extralMaskView.frame.width
-            extralMaskView.frame.origin.y = (bounds.height - extralMaskView.frame.height) / 2
-            
-            extraView.frame.size = option.extraImageSize
-            extraView.frame.origin.x = bounds.width - extraView.frame.width
-            extraView.frame.origin.y = (bounds.height - extraView.frame.height) / 2
-        }
     }
 }
 

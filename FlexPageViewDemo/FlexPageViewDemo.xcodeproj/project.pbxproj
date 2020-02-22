@@ -24,6 +24,11 @@
 		3CCA9BC9219E795600E25133 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3CCA9BC7219E795600E25133 /* LaunchScreen.storyboard */; };
 		3CCA9BD4219E795600E25133 /* FlexPageViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BD3219E795600E25133 /* FlexPageViewTests.swift */; };
 		3CCA9BE3219E79DA00E25133 /* TestFlexPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCA9BE0219E79DA00E25133 /* TestFlexPageViewController.swift */; };
+		84E5426923FFD5E600C81FDC /* IMenuViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E5426823FFD5E600C81FDC /* IMenuViewCell.swift */; };
+		84E5426B23FFD9FA00C81FDC /* MenuViewBaseLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E5426A23FFD9FA00C81FDC /* MenuViewBaseLayout.swift */; };
+		84E5426F23FFEC2000C81FDC /* UIColor+Trans.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E5426E23FFEC2000C81FDC /* UIColor+Trans.swift */; };
+		84E5427123FFEC8400C81FDC /* UIView+Identifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E5427023FFEC8400C81FDC /* UIView+Identifier.swift */; };
+		84E542732400F4FB00C81FDC /* FlexPageViewOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E542722400F4FB00C81FDC /* FlexPageViewOption.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +84,11 @@
 		3CCA9BD3219E795600E25133 /* FlexPageViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexPageViewTests.swift; sourceTree = "<group>"; };
 		3CCA9BD5219E795600E25133 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3CCA9BE0219E79DA00E25133 /* TestFlexPageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestFlexPageViewController.swift; sourceTree = "<group>"; };
+		84E5426823FFD5E600C81FDC /* IMenuViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IMenuViewCell.swift; sourceTree = "<group>"; };
+		84E5426A23FFD9FA00C81FDC /* MenuViewBaseLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewBaseLayout.swift; sourceTree = "<group>"; };
+		84E5426E23FFEC2000C81FDC /* UIColor+Trans.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Trans.swift"; sourceTree = "<group>"; };
+		84E5427023FFEC8400C81FDC /* UIView+Identifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Identifier.swift"; sourceTree = "<group>"; };
+		84E542722400F4FB00C81FDC /* FlexPageViewOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexPageViewOption.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +130,7 @@
 				3CCA9BBE219E795400E25133 /* AppDelegate.swift */,
 				3CCA9BCA219E795600E25133 /* Info.plist */,
 				3CCA9BC5219E795600E25133 /* Assets.xcassets */,
+				3CCA9BD2219E795600E25133 /* FlexPageViewTests */,
 			);
 			path = FlexPageViewDemo;
 			sourceTree = "<group>";
@@ -127,10 +138,12 @@
 		3C489F5A2238B7380046F88A /* FlexPageView */ = {
 			isa = PBXGroup;
 			children = (
-				3C37A44722376B1A002546BA /* MenuViewCell.swift */,
+				84E5426D23FFEBF500C81FDC /* Extension */,
+				84E5426C23FFDAF300C81FDC /* MenuCell */,
+				3C37A44A22376B1A002546BA /* FlexMenuView.swift */,
 				3C37A44822376B1A002546BA /* PageContentView.swift */,
 				3C37A44922376B1A002546BA /* FlexPageView.swift */,
-				3C37A44A22376B1A002546BA /* FlexMenuView.swift */,
+				84E542722400F4FB00C81FDC /* FlexPageViewOption.swift */,
 				3C489F5B2238B7380046F88A /* FlexPageView.h */,
 				3C489F5C2238B7380046F88A /* Info.plist */,
 			);
@@ -141,7 +154,6 @@
 			isa = PBXGroup;
 			children = (
 				3C37A445223769BA002546BA /* FlexPageViewDemo */,
-				3CCA9BD2219E795600E25133 /* FlexPageViewTests */,
 				3C489F5A2238B7380046F88A /* FlexPageView */,
 				3CCA9BBC219E795400E25133 /* Products */,
 			);
@@ -164,6 +176,25 @@
 				3CCA9BD5219E795600E25133 /* Info.plist */,
 			);
 			path = FlexPageViewTests;
+			sourceTree = "<group>";
+		};
+		84E5426C23FFDAF300C81FDC /* MenuCell */ = {
+			isa = PBXGroup;
+			children = (
+				84E5426823FFD5E600C81FDC /* IMenuViewCell.swift */,
+				84E5426A23FFD9FA00C81FDC /* MenuViewBaseLayout.swift */,
+				3C37A44722376B1A002546BA /* MenuViewCell.swift */,
+			);
+			path = MenuCell;
+			sourceTree = "<group>";
+		};
+		84E5426D23FFEBF500C81FDC /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				84E5426E23FFEC2000C81FDC /* UIColor+Trans.swift */,
+				84E5427023FFEC8400C81FDC /* UIView+Identifier.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -308,10 +339,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84E5426B23FFD9FA00C81FDC /* MenuViewBaseLayout.swift in Sources */,
+				84E5427123FFEC8400C81FDC /* UIView+Identifier.swift in Sources */,
 				3C489F682238B74E0046F88A /* FlexMenuView.swift in Sources */,
 				3C489F692238B74E0046F88A /* MenuViewCell.swift in Sources */,
 				3C489F672238B74E0046F88A /* FlexPageView.swift in Sources */,
+				84E5426923FFD5E600C81FDC /* IMenuViewCell.swift in Sources */,
 				3C489F662238B74E0046F88A /* PageContentView.swift in Sources */,
+				84E542732400F4FB00C81FDC /* FlexPageViewOption.swift in Sources */,
+				84E5426F23FFEC2000C81FDC /* UIColor+Trans.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,7 +422,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "www.jianshu.com-u-d471dca73ae9.FlexPageView";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -415,7 +451,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "www.jianshu.com-u-d471dca73ae9.FlexPageView";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -553,7 +589,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "www.jianshu.com-u-d471dca73ae9.FlexPageViewDemo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -573,7 +609,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "www.jianshu.com-u-d471dca73ae9.FlexPageViewDemo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

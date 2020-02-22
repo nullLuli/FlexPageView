@@ -10,16 +10,14 @@ import Foundation
 import UIKit
 
 public struct MenuViewCellData: IMenuViewCellData {
+    public var isSelected: Bool = false
+    
     public var title: String
     
     public var CellClass: UICollectionViewCell.Type {
         return MenuViewCell.self
     }
-    
-    public var identifier: String {
-        return "MenuViewCell"
-    }
-    
+        
     public init(title: String) {
         self.title = title
     }
@@ -50,8 +48,8 @@ public class MenuViewLayout: MenuViewBaseLayout {
         
         for item in 0 ..< collectionView.numberOfItems(inSection: 0) {
             let indexPath = IndexPath(item: item, section: 0)
-            let title = (delegate?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCellData)?.title
-            let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSFontAttributeName: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
+            let title = (dataSource?.collectionView(collectionView, dataForItemAtIndexPath: indexPath) as? MenuViewCellData)?.title
+            let titleWidth = ((title ?? "") as NSString).boundingRect(with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 0), options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: option.titleFont)], context: nil).width
             let labelWidth = titleWidth + option.titleMargin
             let frame = CGRect(x: contentWidth, y: 0, width: labelWidth, height: collectionView.frame.height)
             contentWidth += labelWidth
@@ -84,6 +82,10 @@ public class MenuViewLayout: MenuViewBaseLayout {
 }
 
 public class MenuViewCell: UICollectionViewCell, IMenuViewCell {
+    public var underlineCenterX: CGFloat {
+        return titleLable.center.x
+    }
+    
     var option: FlexPageViewOption = FlexPageViewOption()
     
     var titleLable: UILabel = {
@@ -109,7 +111,7 @@ public class MenuViewCell: UICollectionViewCell, IMenuViewCell {
         titleLable.center = CGPoint(x: bounds.midX, y: bounds.midY)
     }
 
-    // MARK: 更新数据
+    // MARK: Update data
     public func setData(data: IMenuViewCellData, option: FlexPageViewOption) {
         guard let data = data as? MenuViewCellData else {
             assertionFailure()
@@ -122,35 +124,18 @@ public class MenuViewCell: UICollectionViewCell, IMenuViewCell {
         }
     }
     
-    // MARK: 更新滑动UI
+    // MARK: Update UI when scrolling
     public func updateScrollingUI(with precent: CGFloat) {
         if option.allowSelectedEnlarge {
             let scale = 1 + ((1 - precent) * (option.selectedScale - FlexPageViewOption.NormalScale))
             titleLable.transform = CGAffineTransform.identity.scaledBy(x: scale, y: scale)
         }
         
-        titleLable.textColor = updateColor(option.selectedColor, toColor: option.titleColor, percent: precent)
+        titleLable.textColor = UIColor.transition(fromColor: option.selectedColor, toColor: option.titleColor, percent: precent)
     }
     
-    private func updateColor(_ fromColor: UIColor, toColor: UIColor, percent: CGFloat) -> UIColor {
-        var fromR: CGFloat = 0
-        var fromG: CGFloat = 0
-        var fromB: CGFloat = 0
-        var fromA: CGFloat = 0
-        fromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
-        var toR: CGFloat = 0
-        var toG: CGFloat = 0
-        var toB: CGFloat = 0
-        var toA: CGFloat = 0
-        toColor.getRed(&toR, green: &toG, blue: &toB, alpha: &toA)
-        let currentR: CGFloat = fromR + percent * (toR - fromR)
-        let currentG: CGFloat = fromG + percent * (toG - fromG)
-        let currentB: CGFloat = fromB + percent * (toB - fromB)
-        let currentA: CGFloat = fromA + percent * (toA - fromA)
-        return UIColor(red: currentR, green: currentG, blue: currentB, alpha: currentA)
-    }
     
-    // MARK: 更新选中状态UI
+    // MARK: Update UI when selected
     public func updateSelectUI() {
         if isSelected {
             titleLable.textColor = option.selectedColor
