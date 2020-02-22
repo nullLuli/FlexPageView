@@ -1,8 +1,3 @@
-<p align="center">
-    <img src="https://raw.githubusercontent.com/nullLuli/FlexPageView/master/1552911813695.gif" width="30%" height="30%" alt="Screenshot Preview" />
-</p>
-
-
 ## Description
 
 - 类似UISegmentController的UI结构，有一个菜单栏，菜单栏下面是内容页
